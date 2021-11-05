@@ -8,7 +8,7 @@ namespace SecretAdmin.Features.Server.Commands
 {
     public class CommandHandler
     {
-        private readonly Dictionary<string, MethodInfo> _commands = new Dictionary<string, MethodInfo>();
+        private readonly Dictionary<string, MethodInfo> _commands = new();
 
         [ConsoleCommand("Ram")]
         private void ShowRamUsage()

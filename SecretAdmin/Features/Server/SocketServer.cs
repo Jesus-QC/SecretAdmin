@@ -15,7 +15,7 @@ namespace SecretAdmin.Features.Server
     {
         private ScpServer _server;
         public readonly ushort Port;
-        private static readonly UTF8Encoding Encoding = new UTF8Encoding(false, true);
+        private static readonly UTF8Encoding Encoding = new (false, true);
         
         private readonly TcpListener _listener;
         private TcpClient _client;

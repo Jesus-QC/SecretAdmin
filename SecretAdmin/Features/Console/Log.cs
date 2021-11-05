@@ -7,7 +7,7 @@ namespace SecretAdmin.Features.Console
 {
     public class Log
     {
-        private static readonly Regex FrameworksRegex = new Regex(@"\[(DEBUG|INFO|WARN|ERROR)\] (\[.*?\]) (.*)", RegexOptions.Compiled | RegexOptions.Singleline);
+        private static readonly Regex FrameworksRegex = new (@"\[(DEBUG|INFO|WARN|ERROR)\] (\[.*?\]) (.*)", RegexOptions.Compiled | RegexOptions.Singleline);
 
         // Program Alerts
         
@@ -24,6 +24,7 @@ namespace SecretAdmin.Features.Console
             WriteLine("Released under MIT License Copyright © Jesus-QC 2021", ConsoleColor.Red);
             WriteLine("Press any key to continue.", ConsoleColor.Green);
         }
+        
         public static void Input(string message, string title = "SERVER")
         {
             SConsole.ForegroundColor = ConsoleColor.Yellow;
