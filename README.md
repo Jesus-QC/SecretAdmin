@@ -1,3 +1,3 @@
 # SecretAdmin
 
-https://discord.gg/N697PNt9F7
+[**Checkout the discord for support.**](https://discord.gg/N697PNt9F7)
