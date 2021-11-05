@@ -1,3 +1,3 @@
 # SecretAdmin
 
-discord.gg/N697PNt9F7
+https://discord.gg/N697PNt9F7
