@@ -78,13 +78,13 @@ namespace SecretAdmin.Features.Console
             WriteLine(message, ConsoleColor.Yellow);
         }
 
-        private static void WriteLine(string message, ConsoleColor color = ConsoleColor.White)
+        public static void WriteLine(string message, ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.WriteLine(message);
         }
         
-        private static void Write(string message, ConsoleColor color = ConsoleColor.White)
+        public static void Write(string message, ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.Write(message);
@@ -117,8 +117,6 @@ namespace SecretAdmin.Features.Console
                             break;
                     }
                 }
-                
-                
             }
             else
             {
