@@ -88,9 +88,9 @@ namespace SecretAdmin.Features.Server
         
         public void Kill()
         {
-            _serverProcess?.Kill();
             Socket?.Dispose();
             Socket = null;
+            _serverProcess?.Kill();
         }
 
         public void Restart()

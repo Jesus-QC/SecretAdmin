@@ -80,8 +80,7 @@ namespace SecretAdmin.Features.Server
         
         public void Dispose()
         {
-            _crashHandler.Stop();
-            _crashHandler = null;
+            _crashHandler.Dispose();
             _client?.Close();
             _listener?.Stop();
         }
