@@ -81,15 +81,15 @@ namespace SecretAdmin.Features.Server
   ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ",
                         ConsoleColor.DarkYellow, false);
 
-                    if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
-                    {
+                    //if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+                    //{
                         Restart();
-                    }
-                    else
-                    {
-                        Log.Raw("Server crashed, press any key to close SecretAdmin.");
-                        System.Console.ReadKey();
-                    }
+                    //}
+                    //else
+                    //{
+                       // Log.Raw("Server crashed, press any key to close SecretAdmin.");
+                        //System.Console.ReadKey();
+                    //}
                     return;
                 
                 default:

@@ -48,7 +48,7 @@ namespace SecretAdmin
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\nExit Detected. Killing game process.");
 
-            if(ConfigManager.SecretAdminConfig.SafeShutdown)
+            //if(ConfigManager.SecretAdminConfig.SafeShutdown)
                 Server?.Kill();
             
             Console.ForegroundColor = ConsoleColor.Cyan;
