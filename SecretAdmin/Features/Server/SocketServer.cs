@@ -80,9 +80,10 @@ namespace SecretAdmin.Features.Server
         
         public void Dispose()
         {
+            _crashHandler.Stop();
+            _crashHandler = null;
             _client?.Close();
             _listener?.Stop();
-            _crashHandler.Stop();
         }
 
         public void SendMessage(string message)
@@ -148,13 +149,14 @@ namespace SecretAdmin.Features.Server
         
         private bool HandleSecretAdminEvents(string message)
         {
-            switch (message.Trim('.', ' ', '\t', '!', '?', ','))
+            switch (message)
             {
                 case "Command saping does not exist!":
                     _crashHandler.OnReceivePing();
                     return false;
                 
                 case "the round is about to restart! please wait":
+                    System.Console.WriteLine("a");
                     _server.Rounds++;
                     if (_server.Config.RoundsToRestart >= _server.Rounds)
                         _server.ForceRestart();

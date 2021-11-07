@@ -26,6 +26,8 @@ namespace SecretAdmin.Features.Program
             if (au != null && (au[0] == 'y' || au[0] == 'n'))
                 cfg.AutoUpdater = au[0] == 'y';
 
+            Paths.Load();
+            SecretAdmin.Program.ConfigManager.SaveConfig(cfg);
 
             // Server Options
             

@@ -16,15 +16,17 @@ namespace SecretAdmin
         public static Version Version { get; } = new (0, 0, 0,1);
         public static ScpServer Server { get; private set; }
         public static CommandHandler CommandHandler { get; private set; }
+        public static ConfigManager ConfigManager { get; private set; }
 
         static void Main(string[] args)
         {
+            Console.Title = $"SecretAdmin [v{Version}]";
             AppDomain.CurrentDomain.ProcessExit += OnExit;
             
-            Console.Title = $"SecretAdmin [v{Version}]";
-
             Log.Intro();
             Console.ReadKey();
+            
+            ConfigManager = new ConfigManager();
             
             if (ProgramIntroduction.FirstTime)
                 ProgramIntroduction.ShowIntroduction();
