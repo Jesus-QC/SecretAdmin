@@ -26,14 +26,14 @@ namespace SecretAdmin
             Log.Intro();
             Console.ReadKey();
             
-            ConfigManager = new ConfigManager();
+            //ConfigManager = new ConfigManager();
             
             if (ProgramIntroduction.FirstTime)
                 ProgramIntroduction.ShowIntroduction();
             
             Paths.Load();
             
-            ConfigManager.LoadConfig();
+            //ConfigManager.LoadConfig();
 
             CommandHandler = new CommandHandler();
             
