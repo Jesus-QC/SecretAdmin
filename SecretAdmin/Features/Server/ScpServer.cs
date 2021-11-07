@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server.Enums;
 using static System.String;
 
@@ -13,15 +14,16 @@ namespace SecretAdmin.Features.Server
     public class ScpServer
     {
         public SocketServer Socket { get; private set; }
-        public ServerStatus Status;
-
-        private Process _serverProcess;
-        private readonly uint _port;
-        
+        public ServerConfig Config { get; }
         public DateTime StartedTime;
+        public ServerStatus Status;
         public int Rounds;
         
-        public ScpServer(uint port) => _port = port;
+        
+        private Process _serverProcess;
+        
+        
+        public ScpServer(ServerConfig config) => Config = config;
 
         public void Start()
         {
@@ -40,7 +42,7 @@ namespace SecretAdmin.Features.Server
             _serverProcess?.Dispose();
             Socket = new SocketServer(this);
             
-            var gameArgs = new List<string> { "-batchmode", "-nographics", "-silent-crashes", "-nodedicateddelete", $"-id{Process.GetCurrentProcess().Id}", $"-console{Socket.Port}", $"-port{_port}" };
+            var gameArgs = new List<string> { "-batchmode", "-nographics", "-silent-crashes", "-nodedicateddelete", $"-id{Process.GetCurrentProcess().Id}", $"-console{Socket.Port}", $"-port{Config.Port}" };
             var startInfo = new ProcessStartInfo(fileName, Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false };
             
             System.Console.WriteLine();
@@ -53,6 +55,7 @@ namespace SecretAdmin.Features.Server
             
             Status = ServerStatus.Online;
             StartedTime = DateTime.Now;
+            Rounds = 0;
         }
 
         private void OnExited(object o, EventArgs e)
@@ -94,6 +97,12 @@ namespace SecretAdmin.Features.Server
         {
             Kill();
             Start();
+        }
+
+        public void ForceRestart()
+        {
+            Status = ServerStatus.Restarting;
+            Restart();
         }
     }
 }

@@ -73,14 +73,8 @@ namespace SecretAdmin.Features.Server
                     return;
                 
                 var message = Encoding.GetString(messageBuffer, 0, length);
-
-                if (message == "Command saping does not exist!")
-                {
-                    _crashHandler.OnReceivePing();
-                    continue;
-                }
-
-                Log.HandleMessage(message, codeType);
+                if (HandleSecretAdminEvents(message))
+                    Log.HandleMessage(message, codeType);
             }
         }
         
@@ -95,7 +89,7 @@ namespace SecretAdmin.Features.Server
         {
             if (_stream == null)
             {
-                Log.Alert($"The server hasn't been initialized yet");
+                Log.Alert("The server hasn't been initialized yet");
                 return;
             }
 
@@ -118,7 +112,6 @@ namespace SecretAdmin.Features.Server
         {
             switch ((OutputCodes)action)
             {
-                // This seems to show up at the waiting for players event
                 case OutputCodes.RoundRestart:
                     Log.Raw("Waiting for players.", ConsoleColor.DarkCyan);
                     break;
@@ -132,33 +125,43 @@ namespace SecretAdmin.Features.Server
                     break;
                 
                 case OutputCodes.ExitActionReset:
-                    Log.Alert("ExitActionReset."); // DEBUG: Dont remove
                     _server.Status = ServerStatus.Online;
                     break;
                 
                 case OutputCodes.ExitActionShutdown:
-                    Log.Alert("ExitActionShutdown."); // DEBUG: Dont remove
                     _server.Status = ServerStatus.Exiting;
                     break;
                 
                 case OutputCodes.ExitActionSilentShutdown:
-                    Log.Alert("ExitActionSilentShutdown."); // DEBUG: Dont remove
                     _server.Status = ServerStatus.Exiting;
                     break;
                 
                 case OutputCodes.ExitActionRestart:
-                    Log.Alert("ExitActionRestart"); // DEBUG: Dont remove
                     _server.Status = ServerStatus.Restarting;
-                    break;
-
-                case OutputCodes.RoundEnd:
-                    Log.Alert("RoundEnd"); // DEBUG: Dont remove
                     break;
 
                 default:
                     Log.Alert($"Received unknown output code ({action})  ({(OutputCodes)action}), is SecretAdmin up to date?");
                     break;
             }
+        }
+        
+        private bool HandleSecretAdminEvents(string message)
+        {
+            switch (message.Trim('.', ' ', '\t', '!', '?', ','))
+            {
+                case "Command saping does not exist!":
+                    _crashHandler.OnReceivePing();
+                    return false;
+                
+                case "the round is about to restart! please wait":
+                    _server.Rounds++;
+                    if (_server.Config.RoundsToRestart >= _server.Rounds)
+                        _server.ForceRestart();
+                    return true;
+            }
+
+            return true;
         }
     }
 }

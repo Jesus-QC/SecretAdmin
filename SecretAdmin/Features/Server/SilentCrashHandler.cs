@@ -10,8 +10,6 @@ namespace SecretAdmin.Features.Server
         private int _pingCount;
         private Task _pingTask;
 
-        // TODO: this
-        
         public SilentCrashHandler(SocketServer server) => _server = server;
 
         public void Start()
