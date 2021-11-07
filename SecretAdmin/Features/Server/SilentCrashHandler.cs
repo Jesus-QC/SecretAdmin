@@ -39,5 +39,10 @@ namespace SecretAdmin.Features.Server
         {
             _pingCount = 0;
         }
+
+        public void Stop()
+        {
+            _pingTask.Dispose();
+        }
     }
 }

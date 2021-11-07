@@ -88,6 +88,7 @@ namespace SecretAdmin.Features.Server
         {
             _client?.Close();
             _listener?.Stop();
+            _crashHandler.Stop();
         }
 
         public void SendMessage(string message)
