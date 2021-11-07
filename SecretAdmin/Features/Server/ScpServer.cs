@@ -16,6 +16,7 @@ namespace SecretAdmin.Features.Server
         public SocketServer Socket { get; private set; }
         public ServerConfig Config { get; }
         public DateTime StartedTime;
+        public DateTime RoundStartedTime = DateTime.MinValue;
         public ServerStatus Status;
         public int Rounds;
         
@@ -25,6 +26,7 @@ namespace SecretAdmin.Features.Server
 
         public void Start()
         {
+            StartedTime = DateTime.Now;
             var fileName = "SCPSL.x86_64";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 fileName = "SCPSL.exe";
@@ -40,18 +42,30 @@ namespace SecretAdmin.Features.Server
             Socket = new SocketServer(this);
             
             var gameArgs = new List<string> { "-batchmode", "-nographics", "-silent-crashes", "-nodedicateddelete", $"-id{Process.GetCurrentProcess().Id}", $"-console{Socket.Port}", $"-port{Config.Port}" };
-            var startInfo = new ProcessStartInfo(fileName, Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false };
+            var startInfo = new ProcessStartInfo(fileName, Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
             
             System.Console.WriteLine();
             Log.Alert($"Starting server on port {Config.Port}.");
             System.Console.WriteLine();
-            
+
             _serverProcess = Process.Start(startInfo);
             _serverProcess!.Exited += OnExited;
-            _serverProcess.EnableRaisingEvents = true;
+            _serverProcess.ErrorDataReceived += (sender, args) =>
+            {
+                if(IsNullOrEmpty(args.Data)) return;
+                Log.AppendLog("[STDERR] " + args.Data, true, true);
+            };
             
+            _serverProcess.OutputDataReceived += (sender, args) =>
+            {
+                if(IsNullOrEmpty(args.Data)) return;
+                Log.AppendLog("[STDOUT] " + args.Data, true, true);
+            };
+            _serverProcess.EnableRaisingEvents = true;
+            _serverProcess.BeginErrorReadLine();
+            _serverProcess.BeginOutputReadLine();
+
             Status = ServerStatus.Online;
-            StartedTime = DateTime.Now;
             Rounds = 0;
         }
 

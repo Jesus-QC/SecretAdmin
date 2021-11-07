@@ -114,6 +114,7 @@ namespace SecretAdmin.Features.Server
             {
                 case OutputCodes.RoundRestart:
                     Log.Raw("Waiting for players.", ConsoleColor.DarkCyan);
+                    _server.RoundStartedTime = DateTime.Now;
                     break;
 
                 case OutputCodes.IdleEnter:
