@@ -27,13 +27,14 @@ namespace SecretAdmin
             Console.ReadKey();
             
             ConfigManager = new ConfigManager();
-            ConfigManager.LoadConfig();
             
             if (ProgramIntroduction.FirstTime)
                 ProgramIntroduction.ShowIntroduction();
-
+            
             Paths.Load();
             
+            ConfigManager.LoadConfig();
+
             CommandHandler = new CommandHandler();
             
             Server = new ScpServer(new ServerConfig());
