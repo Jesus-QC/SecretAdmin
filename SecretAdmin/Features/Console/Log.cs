@@ -136,12 +136,14 @@ namespace SecretAdmin.Features.Console
             SConsole.SetCursorPosition(0, SConsole.CursorTop - 1);
         }
 
-        private static void AppendLog(string message, bool newLine = false)
+        public static void AppendLog(string message, bool newLine = false, bool serverLog = false)
         {
             var server = SecretAdmin.Program.Server;
-            if(server == null) return;
-            var date = server.RoundStartedTime == DateTime.MinValue ? server.StartedTime : server.RoundStartedTime;
-            using var sw = File.AppendText(Path.Combine(Paths.ProgramLogsFolder, $"{server.Config.Port}-{new DateTimeOffset(date.ToUniversalTime()).ToUnixTimeMilliseconds()}.txt"));
+            if (server == null) return;
+            var date =
+                serverLog ? server.StartedTime : server.RoundStartedTime == DateTime.MinValue ? server.StartedTime : server.RoundStartedTime;
+            using var sw = File.AppendText(Path.Combine(serverLog ? Paths.ServerLogsFolder : Paths.ProgramLogsFolder,
+                $"{server.Config.Port}-{new DateTimeOffset(date.ToUniversalTime()).ToUnixTimeMilliseconds()}.txt"));
             if (newLine)
                 sw.WriteLine(message);
             else
