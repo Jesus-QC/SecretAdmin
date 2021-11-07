@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
 using Main = SecretAdmin.Program;
 
@@ -7,7 +8,7 @@ namespace SecretAdmin.Features.Server
 {
     public class SilentCrashHandler : IDisposable
     {
-        private SocketServer _server;
+        private readonly SocketServer _server;
         private bool _killed;
         private int _pingCount;
 
@@ -27,22 +28,16 @@ namespace SecretAdmin.Features.Server
                 _server.SendMessage("saping");
                 _pingCount++;
                 await Task.Delay(5000);
-                if (_pingCount == 4)
+                if (_pingCount == 3)
                 {
-                    Main.Server.Status = ServerStatus.Restarting;
-                    Main.Server.Restart();
+                    Log.Alert("The server silently crashed, restarting....");
+                    Main.Server.ForceRestart();
                 }
             }
         }
 
-        public void OnReceivePing()
-        {
-            _pingCount = 0;
-        }
+        public void OnReceivePing() => _pingCount = 0;
 
-        public void Dispose()
-        {
-            _killed = true;
-        }
+        public void Dispose() => _killed = true;
     }
 }
