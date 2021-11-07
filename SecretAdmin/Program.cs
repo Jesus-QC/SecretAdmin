@@ -27,6 +27,7 @@ namespace SecretAdmin
             Console.ReadKey();
             
             ConfigManager = new ConfigManager();
+            ConfigManager.LoadConfig();
             
             if (ProgramIntroduction.FirstTime)
                 ProgramIntroduction.ShowIntroduction();
@@ -46,7 +47,8 @@ namespace SecretAdmin
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\nExit Detected. Killing game process.");
 
-            Server?.Kill();
+            if(ConfigManager.SecretAdminConfig.SafeShutdown)
+                Server?.Kill();
             
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Everything seems good to go! Bye :)");

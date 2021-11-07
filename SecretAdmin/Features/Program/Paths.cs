@@ -28,6 +28,7 @@ namespace SecretAdmin.Features.Program
             Directory.CreateDirectory(LogsFolder);
             Directory.CreateDirectory(ServerLogsFolder);
             Directory.CreateDirectory(ProgramLogsFolder);
+            Directory.CreateDirectory(ServerConfigsFolder);
         }
     }
 }

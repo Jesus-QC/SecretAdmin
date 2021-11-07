@@ -80,8 +80,7 @@ namespace SecretAdmin.Features.Server
         
         public void Dispose()
         {
-            _crashHandler.Stop();
-            _crashHandler = null;
+            _crashHandler.Dispose();
             _client?.Close();
             _listener?.Stop();
         }
@@ -156,12 +155,12 @@ namespace SecretAdmin.Features.Server
                     _crashHandler.OnReceivePing();
                     return false;
                 
-                case "the round is about to restart! please wait":
+                /*case "the round is about to restart! please wait":
                     System.Console.WriteLine("a");
                     _server.Rounds++;
                     if (_server.Config.RoundsToRestart >= _server.Rounds)
                         _server.ForceRestart();
-                    return true;
+                    return true;*/
             }
 
             return true;

@@ -10,17 +10,18 @@ namespace SecretAdmin.Features.Program.Config
         private readonly Serializer _serializer = new ();
         private readonly Deserializer _deserializer = new ();
         
-        public MainConfig LoadConfig()
+        public void LoadConfig()
         {
             if(File.Exists(Paths.ProgramConfig))
                 SaveConfig(new MainConfig());
             
-            return SecretAdminConfig = _deserializer.Deserialize<MainConfig>(File.ReadAllText(Paths.ProgramConfig));
+            SecretAdminConfig = _deserializer.Deserialize<MainConfig>(File.ReadAllText(Paths.ProgramConfig));
         }
 
         public void SaveConfig(MainConfig config)
         {
             File.WriteAllText(Paths.ProgramConfig, _serializer.Serialize(config));
+            LoadConfig();
         }
     }
 }

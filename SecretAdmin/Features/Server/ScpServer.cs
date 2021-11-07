@@ -20,9 +20,7 @@ namespace SecretAdmin.Features.Server
         public ServerStatus Status;
         public int Rounds;
         
-        
         private Process _serverProcess;
-        
         
         public ScpServer(ServerConfig config) => Config = config;
 
@@ -35,8 +33,7 @@ namespace SecretAdmin.Features.Server
 
             if (!File.Exists(fileName))
             {
-                System.Console.WriteLine();
-                Log.Alert("Executable not found, make sure this file is on the same folder as LocalAdmin.");
+                Log.Alert("\nExecutable not found, make sure this file is on the same folder as LocalAdmin.");
                 System.Console.ReadLine();
                 Environment.Exit(-1);
             }
@@ -48,7 +45,7 @@ namespace SecretAdmin.Features.Server
             var startInfo = new ProcessStartInfo(fileName, Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false };
             
             System.Console.WriteLine();
-            Log.Alert("Starting server on port 7777.");
+            Log.Alert($"Starting server on port {Config.Port}.");
             System.Console.WriteLine();
             
             _serverProcess = Process.Start(startInfo);
@@ -65,11 +62,13 @@ namespace SecretAdmin.Features.Server
             {
                 case ServerStatus.Restarting:
                     Restart();
-                    break;
+                    return;
+                
                 case ServerStatus.Exiting:
                     Kill();
                     Environment.Exit(0);
-                    break;
+                    return;
+                
                 case ServerStatus.Online:
                     Log.Raw(@"
    █████████                              █████      ███
@@ -79,9 +78,20 @@ namespace SecretAdmin.Features.Server
 ░███          ░███ ░░░   ███████ ░░█████  ░███ ░███ ░███
 ░░███     ███ ░███      ███░░███  ░░░░███ ░███ ░███ ░░░ 
  ░░█████████  █████    ░░████████ ██████  ████ █████ ███
-  ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ", ConsoleColor.DarkYellow, false);
-                    Restart();
-                    break;
+  ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ",
+                        ConsoleColor.DarkYellow, false);
+
+                    if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+                    {
+                        Restart();
+                    }
+                    else
+                    {
+                        Log.Raw("Server crashed, press any key to close SecretAdmin.");
+                        System.Console.ReadKey();
+                    }
+                    return;
+                
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -89,9 +99,9 @@ namespace SecretAdmin.Features.Server
         
         public void Kill()
         {
-            _serverProcess?.Kill();
             Socket?.Dispose();
             Socket = null;
+            _serverProcess?.Kill();
         }
 
         public void Restart()
