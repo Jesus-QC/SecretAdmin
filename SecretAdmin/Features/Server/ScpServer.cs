@@ -16,6 +16,7 @@ namespace SecretAdmin.Features.Server
         public SocketServer Socket { get; private set; }
         public ServerConfig Config { get; }
         public DateTime StartedTime;
+        public DateTime RoundStartedTime = DateTime.MinValue;
         public ServerStatus Status;
         public int Rounds;
         
@@ -27,6 +28,7 @@ namespace SecretAdmin.Features.Server
 
         public void Start()
         {
+            StartedTime = DateTime.Now;
             var fileName = "SCPSL.x86_64";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 fileName = "SCPSL.exe";
@@ -54,7 +56,6 @@ namespace SecretAdmin.Features.Server
             _serverProcess.EnableRaisingEvents = true;
             
             Status = ServerStatus.Online;
-            StartedTime = DateTime.Now;
             Rounds = 0;
         }
 

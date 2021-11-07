@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Text.RegularExpressions;
+using SecretAdmin.Features.Program;
 using SConsole = System.Console;
 
 namespace SecretAdmin.Features.Console
@@ -82,12 +84,14 @@ namespace SecretAdmin.Features.Console
         {
             SConsole.ForegroundColor = color;
             SConsole.WriteLine(message);
+            AppendLog(message, true);
         }
         
         public static void Write(string message, ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.Write(message);
+            AppendLog(message);
         }
         
         public static void HandleMessage(string message, byte code)
@@ -130,6 +134,18 @@ namespace SecretAdmin.Features.Console
             SConsole.SetCursorPosition(0, SConsole.CursorTop - 1);
             SConsole.Write(new string(' ', SConsole.WindowWidth));
             SConsole.SetCursorPosition(0, SConsole.CursorTop - 1);
+        }
+
+        private static void AppendLog(string message, bool newLine = false)
+        {
+            var server = SecretAdmin.Program.Server;
+            if(server == null) return;
+            var date = server.RoundStartedTime == DateTime.MinValue ? server.StartedTime : server.RoundStartedTime;
+            using var sw = File.AppendText(Path.Combine(Paths.ProgramLogsFolder, $"{server.Config.Port}-{new DateTimeOffset(date.ToUniversalTime()).ToUnixTimeMilliseconds()}.txt"));
+            if (newLine)
+                sw.WriteLine(message);
+            else
+                sw.Write(message);
         }
     }
 }
