@@ -20,6 +20,7 @@ namespace SecretAdmin.Features.Server
         private readonly TcpListener _listener;
         private TcpClient _client;
         private NetworkStream _stream;
+        private SilentCrashHandler _crashHandler;
 
         public SocketServer(ScpServer server)
         {
@@ -35,6 +36,9 @@ namespace SecretAdmin.Features.Server
                 _stream = _client.GetStream();
                 Task.Run(ListenRequests);
             }, _listener);
+
+            _crashHandler = new SilentCrashHandler(this);
+            _crashHandler.Start();
         }
 
         public async void ListenRequests()
@@ -51,14 +55,14 @@ namespace SecretAdmin.Features.Server
                 
                 var messageBuffer = new byte[length];
                 var messageBytesRead = await _stream.ReadAsync(messageBuffer, 0, length);
-                
+
                 if (codeBytes <= 0 || lengthBytes != sizeof(int) || messageBytesRead <= 0)
                 {
                     if(_server.Status == ServerStatus.Online)
                         Log.Alert("Socket disconnected.");
                     break;
                 }
-                
+
                 if (codeType >= 16)
                 {
                     HandleAction(codeType);
@@ -69,6 +73,13 @@ namespace SecretAdmin.Features.Server
                     return;
                 
                 var message = Encoding.GetString(messageBuffer, 0, length);
+
+                if (message == "Command saping does not exist!")
+                {
+                    _crashHandler.OnReceivePing();
+                    continue;
+                }
+
                 Log.HandleMessage(message, codeType);
             }
         }
