@@ -31,6 +31,11 @@ namespace SecretAdmin.Features.Program
 
             // Server Options
             
+            Log.Alert("Do you want to auto-install EXILED? (y/n)");
+            var ai = System.Console.ReadLine()?.ToLower();
+            if (ai != null && (ai[0] == 'y' || ai[0] == 'n'))
+                ExiledInstaller.InstallExiled();
+            
             Log.Alert("Ok, thats all! Time to enjoy the server :)");
             System.Console.ForegroundColor = ConsoleColor.Green;
             System.Console.WriteLine("Press any key to continue.");
