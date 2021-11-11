@@ -12,7 +12,7 @@ namespace SecretAdmin.Features.Program.Config
         
         public void LoadConfig()
         {
-            if(File.Exists(Paths.ProgramConfig))
+            if(!File.Exists(Paths.ProgramConfig))
                 SaveConfig(new MainConfig());
             
             SecretAdminConfig = _deserializer.Deserialize<MainConfig>(File.ReadAllText(Paths.ProgramConfig));

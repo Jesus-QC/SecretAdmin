@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Globalization;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
-using System.Threading;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
@@ -74,7 +71,10 @@ namespace SecretAdmin.Features.Server
                 
                 var message = Encoding.GetString(messageBuffer, 0, length);
                 if (HandleSecretAdminEvents(message))
+                {
+                    _server.AddLog(message, $"[{DateTime.Now:T}]");
                     Log.HandleMessage(message, codeType);
+                }
             }
         }
         
@@ -114,15 +114,17 @@ namespace SecretAdmin.Features.Server
             {
                 case OutputCodes.RoundRestart:
                     Log.Raw("Waiting for players.", ConsoleColor.DarkCyan);
-                    _server.RoundStartedTime = DateTime.Now;
+                    _server.AddLog("Waiting for players.");
                     break;
 
                 case OutputCodes.IdleEnter:
                     Log.Raw("Server entered idle mode.", ConsoleColor.DarkYellow);
+                    _server.AddLog("Server entered idle mode.");
                     break;
 
                 case OutputCodes.IdleExit:
                     Log.Raw("Server exited idle mode.", ConsoleColor.DarkYellow);
+                    _server.AddLog("Server exited idle mode.");
                     break;
                 
                 case OutputCodes.ExitActionReset:
@@ -142,7 +144,7 @@ namespace SecretAdmin.Features.Server
                     break;
 
                 default:
-                    Log.Alert($"Received unknown output code ({action})  ({(OutputCodes)action}), is SecretAdmin up to date?");
+                    Log.Alert($"Received unknown output code ({(OutputCodes)action}), is SecretAdmin up to date?");
                     break;
             }
         }

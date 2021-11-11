@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server.Enums;
-using static System.String;
 
 namespace SecretAdmin.Features.Server
 {
@@ -15,57 +11,49 @@ namespace SecretAdmin.Features.Server
     {
         public SocketServer Socket { get; private set; }
         public ServerConfig Config { get; }
-        public DateTime StartedTime;
-        public DateTime RoundStartedTime = DateTime.MinValue;
+        
         public ServerStatus Status;
-        public int Rounds;
+        public DateTime StartedTime; //TODO: .
+        public int Rounds; //TODO: .
         
         private Process _serverProcess;
+        private Logger _logger;
+        private Logger _outputLogger;
         
         public ScpServer(ServerConfig config) => Config = config;
 
         public void Start()
         {
-            StartedTime = DateTime.Now;
-            var fileName = "SCPSL.x86_64";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                fileName = "SCPSL.exe";
-
-            if (!File.Exists(fileName))
+            if (!Utils.GetExecutable(out var fileName))
             {
-                Log.Alert("\nExecutable not found, make sure this file is on the same folder as LocalAdmin.");
-                System.Console.ReadLine();
+                System.Console.ReadKey();
                 Environment.Exit(-1);
+                return;
             }
             
+            _logger = new Logger(Utils.GetLogsName(Config.Port));
+            _outputLogger = new Logger(Utils.GetOutputLogsName(Config.Port));
+
             _serverProcess?.Dispose();
             Socket = new SocketServer(this);
             
             var gameArgs = new List<string> { "-batchmode", "-nographics", "-silent-crashes", "-nodedicateddelete", $"-id{Process.GetCurrentProcess().Id}", $"-console{Socket.Port}", $"-port{Config.Port}" };
-            var startInfo = new ProcessStartInfo(fileName, Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+            var startInfo = new ProcessStartInfo(fileName, string.Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
             
-            System.Console.WriteLine();
+            Log.WriteLine("");
             Log.Alert($"Starting server on port {Config.Port}.");
-            System.Console.WriteLine();
+            Log.WriteLine("");
 
             _serverProcess = Process.Start(startInfo);
             _serverProcess!.Exited += OnExited;
-            _serverProcess.ErrorDataReceived += (sender, args) =>
-            {
-                if(IsNullOrEmpty(args.Data)) return;
-                Log.AppendLog("[STDERR] " + args.Data, true, true);
-            };
-            
-            _serverProcess.OutputDataReceived += (sender, args) =>
-            {
-                if(IsNullOrEmpty(args.Data)) return;
-                Log.AppendLog("[STDOUT] " + args.Data, true, true);
-            };
             _serverProcess.EnableRaisingEvents = true;
+            _serverProcess.ErrorDataReceived += (s, args)  => AddOutputLog(args.Data, "[STDERR]");
+            _serverProcess.OutputDataReceived += (s, args) => AddOutputLog(args.Data, "[STDOUT]");
             _serverProcess.BeginErrorReadLine();
             _serverProcess.BeginOutputReadLine();
 
             Status = ServerStatus.Online;
+            StartedTime = DateTime.Now;
             Rounds = 0;
         }
 
@@ -94,7 +82,7 @@ namespace SecretAdmin.Features.Server
   ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ",
                         ConsoleColor.DarkYellow, false);
 
-                    //if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+                    //if (ConfigManager.SecretAdminConfig.RestartOnCrash)
                     //{
                         Restart();
                     //}
@@ -127,6 +115,22 @@ namespace SecretAdmin.Features.Server
         {
             Status = ServerStatus.Restarting;
             Restart();
+        }
+
+        public void AddLog(string message, string title = null)
+        {
+            if(string.IsNullOrEmpty(message))
+                return;
+            
+            _logger.AppendLog(title == null ? message : $"{title} {message}", true);
+        }
+        
+        public void AddOutputLog(string message, string title = null)
+        {
+            if(string.IsNullOrEmpty(message))
+                return;
+            
+            _outputLogger.AppendLog(title == null ? message : $"{title} {message}", true);
         }
     }
 }

@@ -7,10 +7,11 @@ namespace SecretAdmin.Features.Program
 {
     public class ProgramIntroduction
     {
-        public static bool FirstTime => !Directory.Exists("SecretAdmin");
+        public static bool FirstTime => !File.Exists(Paths.ProgramConfig);
         
         public static void ShowIntroduction()
         {
+            Log.Intro();
             Log.WriteLine("");
             Log.Alert("Hi, welcome to SecretAdmin!");
             Log.Alert("It seems like your first time using it, so we have to configure some things before!");

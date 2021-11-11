@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using SecretAdmin.Features.Console;
-using SecretAdmin.Features.Server.Enums;
 using Main = SecretAdmin.Program;
 
 namespace SecretAdmin.Features.Server

@@ -2,8 +2,8 @@
 using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
-using SecretAdmin.Features.Program;
 using SConsole = System.Console;
+using static SecretAdmin.Program;
 
 namespace SecretAdmin.Features.Console
 {
@@ -15,6 +15,7 @@ namespace SecretAdmin.Features.Console
         
         public static void Intro()
         {
+            SConsole.Clear();
             WriteLine(@" .--.                        .-.    .--.    .-.          _       
 : .--'                      .' `.  : .; :   : :         :_;      
 `. `.  .--.  .--. .--.  .--.`. .'  :    : .-' :,-.,-.,-..-.,-.,-.
@@ -25,6 +26,7 @@ namespace SecretAdmin.Features.Console
             WriteLine(" by Jesus-QC", ConsoleColor.Blue);
             WriteLine("Released under MIT License Copyright © Jesus-QC 2021", ConsoleColor.Red);
             WriteLine("Press any key to continue.", ConsoleColor.Green);
+            SConsole.ReadKey();
         }
         
         public static void Input(string message, string title = "SERVER")
@@ -80,18 +82,18 @@ namespace SecretAdmin.Features.Console
             WriteLine(message, ConsoleColor.Yellow);
         }
 
-        public static void WriteLine(string message, ConsoleColor color = ConsoleColor.White)
+        public static void WriteLine(string message = "", ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.WriteLine(message);
-            AppendLog(message, true);
+            ProgramLogger?.AppendLog(message, true);
         }
         
-        public static void Write(string message, ConsoleColor color = ConsoleColor.White)
+        public static void Write(string message = "", ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.Write(message);
-            AppendLog(message);
+            ProgramLogger?.AppendLog(message);
         }
         
         public static void HandleMessage(string message, byte code)
@@ -134,20 +136,6 @@ namespace SecretAdmin.Features.Console
             SConsole.SetCursorPosition(0, SConsole.CursorTop - 1);
             SConsole.Write(new string(' ', SConsole.WindowWidth));
             SConsole.SetCursorPosition(0, SConsole.CursorTop - 1);
-        }
-
-        public static void AppendLog(string message, bool newLine = false, bool serverLog = false)
-        {
-            var server = SecretAdmin.Program.Server;
-            if (server == null) return;
-            var date =
-                serverLog ? server.StartedTime : server.RoundStartedTime == DateTime.MinValue ? server.StartedTime : server.RoundStartedTime;
-            using var sw = File.AppendText(Path.Combine(serverLog ? Paths.ServerLogsFolder : Paths.ProgramLogsFolder,
-                $"{server.Config.Port}-{new DateTimeOffset(date.ToUniversalTime()).ToUnixTimeMilliseconds()}.txt"));
-            if (newLine)
-                sw.WriteLine(message);
-            else
-                sw.Write(message);
         }
     }
 }
