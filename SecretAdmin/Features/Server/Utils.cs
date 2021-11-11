@@ -15,7 +15,11 @@ namespace SecretAdmin.Features.Server
         {
             executable = "SCPSL.x86_64";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                executable = @"C:\Program Files (x86)\Steam\steamapps\common\SCP Secret Laboratory Dedicated Server\SCPSL.exe";
+                executable = @"SCPSL.exe";
+
+#if DEBUG
+            executable = @"C:\Program Files (x86)\Steam\steamapps\common\SCP Secret Laboratory Dedicated Server\SCPSL.exe";
+#endif
 
             if (File.Exists(executable)) 
                 return true;
