@@ -1,9 +1,7 @@
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using SecretAdmin.Features.Console;
-using SecretAdmin.Features.Server;
 
 namespace SecretAdmin.Features.Program
 {
@@ -11,9 +9,7 @@ namespace SecretAdmin.Features.Program
     {
         public static void InstallExiled()
         {
-            string platformSpecificString = null;
-
-            platformSpecificString = "Linux";
+            var platformSpecificString = "Linux";
             
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 platformSpecificString = "Win.exe";
@@ -47,7 +43,7 @@ namespace SecretAdmin.Features.Program
                 p.Start();
                 p.WaitForExit();
             }
-			
+
             Log.Alert("Done! Exiled was installed correctly.");
         }
     }

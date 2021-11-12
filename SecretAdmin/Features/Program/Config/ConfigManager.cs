@@ -5,11 +5,10 @@ namespace SecretAdmin.Features.Program.Config
 {
     public class ConfigManager
     {
-        public MainConfig SecretAdminConfig { get; private set; }
-
+        public MainConfig SecretAdminConfig { get; private set; } = new ();
         private readonly Serializer _serializer = new ();
         private readonly Deserializer _deserializer = new ();
-        
+
         public void LoadConfig()
         {
             if(!File.Exists(Paths.ProgramConfig))

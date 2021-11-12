@@ -151,18 +151,19 @@ namespace SecretAdmin.Features.Server
         
         private bool HandleSecretAdminEvents(string message)
         {
-            switch (message)
+            if (message == "Command saping does not exist!")
             {
-                case "Command saping does not exist!":
-                    _crashHandler.OnReceivePing();
-                    return false;
+                _crashHandler.OnReceivePing();
+                return false;
+            }
+
+            if (message.StartsWith("Round finished!") || message.StartsWith("Round restart forced."))
+            {
+                _server.Rounds++;
                 
-                /*case "the round is about to restart! please wait":
-                    System.Console.WriteLine("a");
-                    _server.Rounds++;
-                    if (_server.Config.RoundsToRestart >= _server.Rounds)
-                        _server.ForceRestart();
-                    return true;*/
+                if (_server.Config.RoundsToRestart >= _server.Rounds && _server.Status == ServerStatus.Online)
+                    _server.ForceRestart();
+                return true;
             }
 
             return true;

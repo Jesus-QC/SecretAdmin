@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.IO;
 using System.Text.RegularExpressions;
 using SConsole = System.Console;
 using static SecretAdmin.Program;
@@ -25,6 +23,10 @@ namespace SecretAdmin.Features.Console
             Write($"Secret Admin - Version v{SecretAdmin.Program.Version}");
             WriteLine(" by Jesus-QC", ConsoleColor.Blue);
             WriteLine("Released under MIT License Copyright © Jesus-QC 2021", ConsoleColor.Red);
+
+            if (!ConfigManager.SecretAdminConfig.ManualStart)
+                return;
+            
             WriteLine("Press any key to continue.", ConsoleColor.Green);
             SConsole.ReadKey();
         }

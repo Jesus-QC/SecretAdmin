@@ -2,6 +2,9 @@
 {
     public class AutoUpdater
     {
-        
+        public void CheckForUpdates()
+        {
+            // todo: this
+        }
     }
 }

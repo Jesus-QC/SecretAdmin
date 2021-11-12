@@ -40,15 +40,15 @@ namespace SecretAdmin.Features.Server
             var gameArgs = new List<string> { "-batchmode", "-nographics", "-silent-crashes", "-nodedicateddelete", $"-id{Process.GetCurrentProcess().Id}", $"-console{Socket.Port}", $"-port{Config.Port}" };
             var startInfo = new ProcessStartInfo(fileName, string.Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
             
-            Log.WriteLine("");
+            Log.WriteLine();
             Log.Alert($"Starting server on port {Config.Port}.");
-            Log.WriteLine("");
+            Log.WriteLine();
 
             _serverProcess = Process.Start(startInfo);
             _serverProcess!.Exited += OnExited;
             _serverProcess.EnableRaisingEvents = true;
-            _serverProcess.ErrorDataReceived += (s, args)  => AddOutputLog(args.Data, "[STDERR]");
-            _serverProcess.OutputDataReceived += (s, args) => AddOutputLog(args.Data, "[STDOUT]");
+            _serverProcess.ErrorDataReceived += (_, args)  => AddOutputLog(args.Data, "[STDERR]");
+            _serverProcess.OutputDataReceived += (_, args) => AddOutputLog(args.Data, "[STDOUT]");
             _serverProcess.BeginErrorReadLine();
             _serverProcess.BeginOutputReadLine();
 
@@ -82,15 +82,10 @@ namespace SecretAdmin.Features.Server
   ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ",
                         ConsoleColor.DarkYellow, false);
 
-                    //if (ConfigManager.SecretAdminConfig.RestartOnCrash)
-                    //{
+                    if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
                         Restart();
-                    //}
-                    //else
-                    //{
-                       // Log.Raw("Server crashed, press any key to close SecretAdmin.");
-                        //System.Console.ReadKey();
-                    //}
+                    else
+                        Log.Raw("Server crashed, press any key to close SecretAdmin."); System.Console.ReadKey();
                     return;
                 
                 default:

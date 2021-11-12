@@ -12,7 +12,7 @@ namespace SecretAdmin.Features.Program
         public static void ShowIntroduction()
         {
             Log.Intro();
-            Log.WriteLine("");
+            Log.WriteLine();
             Log.Alert("Hi, welcome to SecretAdmin!");
             Log.Alert("It seems like your first time using it, so we have to configure some things before!");
             Log.WriteLine("Press any key to continue.", ConsoleColor.Green);
@@ -29,6 +29,8 @@ namespace SecretAdmin.Features.Program
 
             // Server Options
 
+            // Start the server
+            
             Log.Alert("Ok, thats all! Time to enjoy the server :)");
             System.Console.ForegroundColor = ConsoleColor.Green;
             System.Console.WriteLine("Press any key to continue.");

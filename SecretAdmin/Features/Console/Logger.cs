@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using SecretAdmin.Features.Server;
+﻿using System.IO;
 
 namespace SecretAdmin.Features.Console
 {
@@ -15,13 +13,12 @@ namespace SecretAdmin.Features.Console
 
         public void AppendLog(string message, bool newLine = false)
         {
-            using (var stream = File.AppendText(_path))
-            {
-                if (newLine)
-                    stream.WriteLine(message);
-                else
-                    stream.Write(message);
-            }
+            using var stream = File.AppendText(_path);
+            
+            if (newLine)
+                stream.WriteLine(message);
+            else
+                stream.Write(message);
         }
     }
 }
