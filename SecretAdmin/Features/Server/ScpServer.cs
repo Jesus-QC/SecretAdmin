@@ -31,6 +31,7 @@ namespace SecretAdmin.Features.Server
                 return;
             }
             
+            Utils.ArchiveServerLogs();
             _logger = new Logger(Utils.GetLogsName(Config.Port));
             _outputLogger = new Logger(Utils.GetOutputLogsName(Config.Port));
 

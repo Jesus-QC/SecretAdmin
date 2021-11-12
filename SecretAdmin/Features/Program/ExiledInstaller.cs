@@ -5,7 +5,7 @@ using SecretAdmin.Features.Console;
 
 namespace SecretAdmin.Features.Program
 {
-    public class ExiledInstaller
+    public static class ExiledInstaller
     {
         public static void InstallExiled()
         {

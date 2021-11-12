@@ -18,8 +18,7 @@ namespace SecretAdmin
         public static CommandHandler CommandHandler { get; private set; }
         public static ConfigManager ConfigManager { get; private set; }
         public static Logger ProgramLogger { get; private set; }
-        public static AutoUpdater AutoUpdater { get; private set; }
-        
+
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += OnExit;
@@ -35,8 +34,8 @@ namespace SecretAdmin
             
             ConfigManager.LoadConfig();
             ProgramLogger = new Logger(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"));
-
-            AutoUpdater = new AutoUpdater();
+            Utils.ArchiveControlLogs();
+            
             if(ConfigManager.SecretAdminConfig.AutoUpdater)
                 AutoUpdater.CheckForUpdates();
             
@@ -45,7 +44,7 @@ namespace SecretAdmin
             Server = new ScpServer(new ServerConfig());
             Server.Start();
 
-            CommandHandler = new ();
+            CommandHandler = new CommandHandler();
             InputManager.Start();
         }
 

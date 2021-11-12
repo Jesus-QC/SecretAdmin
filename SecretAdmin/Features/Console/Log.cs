@@ -5,7 +5,7 @@ using static SecretAdmin.Program;
 
 namespace SecretAdmin.Features.Console
 {
-    public class Log
+    public static class Log 
     {
         private static readonly Regex FrameworksRegex = new (@"\[(DEBUG|INFO|WARN|ERROR)\] (\[.*?\]) (.*)", RegexOptions.Compiled | RegexOptions.Singleline);
 

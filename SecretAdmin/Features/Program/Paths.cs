@@ -2,7 +2,7 @@
 
 namespace SecretAdmin.Features.Program
 {
-    public class Paths
+    public static class Paths
     {
         public static string MainFolder { get; private set; }
         public static string LogsFolder { get; private set; }

@@ -2,7 +2,7 @@
 
 namespace SecretAdmin.Features.Program
 {
-    public class InputManager
+    public static class InputManager
     {
         public static void Start()
         {

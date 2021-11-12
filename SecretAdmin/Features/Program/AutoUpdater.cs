@@ -1,8 +1,8 @@
 ﻿namespace SecretAdmin.Features.Program
 {
-    public class AutoUpdater
+    public static class AutoUpdater
     {
-        public void CheckForUpdates()
+        public static void CheckForUpdates()
         {
             // todo: this
         }

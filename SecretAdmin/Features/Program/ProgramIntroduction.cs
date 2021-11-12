@@ -5,7 +5,7 @@ using SecretAdmin.Features.Program.Config;
 
 namespace SecretAdmin.Features.Program
 {
-    public class ProgramIntroduction
+    public static class ProgramIntroduction
     {
         public static bool FirstTime => !File.Exists(Paths.ProgramConfig);
         
