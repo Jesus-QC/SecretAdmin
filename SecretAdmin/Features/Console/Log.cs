@@ -23,7 +23,8 @@ namespace SecretAdmin.Features.Console
             Write($"Secret Admin - Version v{SecretAdmin.Program.Version}");
             WriteLine(" by Jesus-QC", ConsoleColor.Blue);
             WriteLine("Released under MIT License Copyright © Jesus-QC 2021", ConsoleColor.Red);
-
+            WriteLine();
+            
             if (!ConfigManager.SecretAdminConfig.ManualStart)
                 return;
             
@@ -38,7 +39,7 @@ namespace SecretAdmin.Features.Console
             Raw(message, ConsoleColor.Magenta, false);
         }
         
-        public static void Alert(string message, bool showTimeStamp = true)
+        public static void Alert(object message, bool showTimeStamp = true)
         {
             if (showTimeStamp)
                 Write($"[{DateTime.Now:T}] ", ConsoleColor.DarkRed);
@@ -50,7 +51,7 @@ namespace SecretAdmin.Features.Console
         
         // Alerts
         
-        public static void Raw(string message, ConsoleColor color = ConsoleColor.White, bool showTimeStamp = true) => WriteLine(showTimeStamp ? $"[{DateTime.Now:T}] {message}" : message, color);
+        public static void Raw(object message, ConsoleColor color = ConsoleColor.White, bool showTimeStamp = true) => WriteLine(showTimeStamp ? $"[{DateTime.Now:T}] {message}" : message, color);
         
         private static void Info(string title, string message)
         {
@@ -84,14 +85,14 @@ namespace SecretAdmin.Features.Console
             WriteLine(message, ConsoleColor.Yellow);
         }
 
-        public static void WriteLine(string message = "", ConsoleColor color = ConsoleColor.White)
+        public static void WriteLine(object message = null, ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.WriteLine(message);
             ProgramLogger?.AppendLog(message, true);
         }
         
-        public static void Write(string message = "", ConsoleColor color = ConsoleColor.White)
+        public static void Write(object message = null, ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.Write(message);

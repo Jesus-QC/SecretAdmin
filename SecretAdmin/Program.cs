@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using SecretAdmin.API;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Program.Config;
@@ -15,7 +16,6 @@ namespace SecretAdmin
     {
         public static Version Version { get; } = new (0, 0, 0,1);
         public static ScpServer Server { get; private set; }
-        public static CommandHandler CommandHandler { get; private set; }
         public static ConfigManager ConfigManager { get; private set; }
         public static Logger ProgramLogger { get; private set; }
 
@@ -28,11 +28,10 @@ namespace SecretAdmin
             
             Paths.Load();
             ConfigManager = new ConfigManager();
-            
             if (ProgramIntroduction.FirstTime || arguments.Reconfigure)
                 ProgramIntroduction.ShowIntroduction();
-            
             ConfigManager.LoadConfig();
+            
             if(arguments.Logs)
                 ProgramLogger = new Logger(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"));
             Utils.ArchiveControlLogs();
@@ -42,10 +41,11 @@ namespace SecretAdmin
             
             Log.Intro();
             
+            ModuleManager.LoadAll();
+            
             Server = new ScpServer(ConfigManager.GetServerConfig(arguments.Config));
             Server.Start();
-
-            CommandHandler = new CommandHandler();
+            
             InputManager.Start();
         }
 

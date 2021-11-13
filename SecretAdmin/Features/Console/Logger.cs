@@ -11,7 +11,7 @@ namespace SecretAdmin.Features.Console
             _path = path;
         }
 
-        public void AppendLog(string message, bool newLine = false)
+        public void AppendLog(object message, bool newLine = false)
         {
             using var stream = File.AppendText(_path);
             
