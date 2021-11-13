@@ -121,6 +121,7 @@ namespace SecretAdmin.Features.Server
             switch (ev.OutputCode)
             {
                 case OutputCodes.RoundRestart:
+                    SEvents.OnRestartedRound();
                     Log.Raw("Waiting for players.", ConsoleColor.DarkCyan);
                     _server.AddLog("Waiting for players.");
                     break;
@@ -167,6 +168,7 @@ namespace SecretAdmin.Features.Server
 
             if (message.StartsWith("Round finished!") || message.StartsWith("Round restart forced."))
             {
+                SEvents.OnRestartingRound();
                 _server.Rounds++;
                 
                 if (_server.Config.RoundsToRestart >= _server.Rounds && _server.Status == ServerStatus.Online)

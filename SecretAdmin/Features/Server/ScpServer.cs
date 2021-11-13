@@ -4,6 +4,7 @@ using System.Diagnostics;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server.Enums;
+using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
 namespace SecretAdmin.Features.Server
 {
@@ -103,6 +104,7 @@ namespace SecretAdmin.Features.Server
 
         public void Restart()
         {
+            SEvents.OnRestarted();
             Kill();
             Start();
         }
