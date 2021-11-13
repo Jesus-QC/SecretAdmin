@@ -23,8 +23,7 @@ namespace SecretAdmin.Features.Console
             Write($"Secret Admin - Version v{SecretAdmin.Program.Version}");
             WriteLine(" by Jesus-QC", ConsoleColor.Blue);
             WriteLine("Released under MIT License Copyright © Jesus-QC 2021", ConsoleColor.Red);
-            WriteLine();
-            
+
             if (!ConfigManager.SecretAdminConfig.ManualStart)
                 return;
             

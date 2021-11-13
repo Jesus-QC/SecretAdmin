@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Loader;
+using System.Text;
 using SecretAdmin.API.Features;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
@@ -12,9 +14,11 @@ namespace SecretAdmin.API
     public static class ModuleManager
     {
         public static List<IModule> Modules = new ();
-        
+        public static List<Assembly> Assemblies = new ();
+
         public static void LoadAll()
         {
+            Log.WriteLine();
             Log.Raw("Loading modules dependencies!", ConsoleColor.DarkCyan);
 
             var startTime = DateTime.Now;
@@ -23,7 +27,7 @@ namespace SecretAdmin.API
             {
                 try
                 {
-                    var assembly = Assembly.Load(File.ReadAllBytes(file));
+                    var assembly = Assembly.UnsafeLoadFrom(file);
                     Log.Raw($"Dependency {assembly.GetName().Name} ({assembly.GetName().Version}) has been loaded!");
                 }
                 catch (Exception e)
