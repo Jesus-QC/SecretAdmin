@@ -22,18 +22,19 @@ namespace SecretAdmin
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += OnExit;
-            
             Console.Title = $"SecretAdmin [v{Version}]";
 
-            Paths.Load();
+            var arguments = ArgumentsManager.GetArgs(args);
             
+            Paths.Load();
             ConfigManager = new ConfigManager();
             
-            if (ProgramIntroduction.FirstTime)
+            if (ProgramIntroduction.FirstTime || arguments.Reconfigure)
                 ProgramIntroduction.ShowIntroduction();
             
             ConfigManager.LoadConfig();
-            ProgramLogger = new Logger(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"));
+            if(arguments.Logs)
+                ProgramLogger = new Logger(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"));
             Utils.ArchiveControlLogs();
             
             if(ConfigManager.SecretAdminConfig.AutoUpdater)
@@ -41,7 +42,7 @@ namespace SecretAdmin
             
             Log.Intro();
             
-            Server = new ScpServer(new ServerConfig());
+            Server = new ScpServer(ConfigManager.GetServerConfig(arguments.Config));
             Server.Start();
 
             CommandHandler = new CommandHandler();
