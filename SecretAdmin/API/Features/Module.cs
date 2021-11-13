@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using SecretAdmin.Features.Console;
-using SecretAdmin.Features.Program;
-using SecretAdmin.Features.Server.Commands;
 
 namespace SecretAdmin.API.Features
 {

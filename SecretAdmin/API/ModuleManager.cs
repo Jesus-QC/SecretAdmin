@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Loader;
-using System.Text;
 using SecretAdmin.API.Features;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;

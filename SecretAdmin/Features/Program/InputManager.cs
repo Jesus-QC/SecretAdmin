@@ -1,5 +1,4 @@
 ﻿using SecretAdmin.Features.Console;
-using SecretAdmin.Features.Server.Commands;
 
 namespace SecretAdmin.Features.Program
 {

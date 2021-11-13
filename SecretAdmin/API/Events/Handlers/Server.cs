@@ -1,5 +1,4 @@
-﻿using System;
-using SecretAdmin.API.Events.EventArgs;
+﻿using SecretAdmin.API.Events.EventArgs;
 
 namespace SecretAdmin.API.Events.Handlers
 {

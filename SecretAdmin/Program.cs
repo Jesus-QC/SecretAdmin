@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
-using System.Threading.Tasks;
 using SecretAdmin.API;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server;
 using SecretAdmin.Features.Server.Commands;
-using SecretAdmin.Features.Server.Enums;
 
 namespace SecretAdmin
 {
