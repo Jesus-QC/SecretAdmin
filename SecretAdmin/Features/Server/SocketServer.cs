@@ -3,8 +3,10 @@ using System.Net;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using SecretAdmin.API.Events.EventArgs;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
+using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
 namespace SecretAdmin.Features.Server
 {
@@ -110,7 +112,13 @@ namespace SecretAdmin.Features.Server
         
         public void HandleAction(byte action)
         {
-            switch ((OutputCodes)action)
+            var ev = new ReceivedActionEventArgs(action);
+            SEvents.OnReceivedAction(ev);
+            
+            if(!ev.IsEnabled)
+                return;
+            
+            switch (ev.OutputCode)
             {
                 case OutputCodes.RoundRestart:
                     Log.Raw("Waiting for players.", ConsoleColor.DarkCyan);

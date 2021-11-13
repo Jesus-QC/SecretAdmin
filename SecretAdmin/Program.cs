@@ -18,6 +18,7 @@ namespace SecretAdmin
         public static ScpServer Server { get; private set; }
         public static ConfigManager ConfigManager { get; private set; }
         public static Logger ProgramLogger { get; private set; }
+        public static CommandHandler CommandHandler { get; private set; }
 
         static void Main(string[] args)
         {
@@ -40,7 +41,8 @@ namespace SecretAdmin
                 AutoUpdater.CheckForUpdates();
             
             Log.Intro();
-            
+
+            CommandHandler = new CommandHandler();
             ModuleManager.LoadAll();
             
             Server = new ScpServer(ConfigManager.GetServerConfig(arguments.Config));

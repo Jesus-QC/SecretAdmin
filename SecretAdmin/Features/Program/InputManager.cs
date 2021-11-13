@@ -5,12 +5,8 @@ namespace SecretAdmin.Features.Program
 {
     public static class InputManager
     {
-        private static CommandHandler _handler;
-        
         public static void Start()
         {
-            _handler = new CommandHandler();
-            
             while (true)
             {
                 var input = System.Console.ReadLine();
@@ -22,7 +18,7 @@ namespace SecretAdmin.Features.Program
                 
                 Log.DeletePrevConsoleLine();
                 
-                if(!_handler.SendCommand(input))
+                if(!SecretAdmin.Program.CommandHandler.SendCommand(input))
                     ManageInput(input);
             }
         }

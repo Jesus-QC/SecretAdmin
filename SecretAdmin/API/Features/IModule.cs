@@ -9,5 +9,6 @@ namespace SecretAdmin.API.Features
         Version Version { get; set; }
 
         void OnEnabled();
+        void OnRegisteringCommands();
     }
 }

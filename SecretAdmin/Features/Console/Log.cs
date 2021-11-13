@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using SecretAdmin.API.Events.EventArgs;
 using SConsole = System.Console;
 using static SecretAdmin.Program;
+using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
 namespace SecretAdmin.Features.Console
 {
@@ -100,7 +102,13 @@ namespace SecretAdmin.Features.Console
         
         public static void HandleMessage(string message, byte code)
         {
-            if(message == null)
+            var ev = new ReceivedMessageEventArgs(message, code);
+            SEvents.OnReceivedMessage(ev);
+
+            message = ev.Message;
+            code = ev.Code;
+            
+            if(!ev.IsAllowed|| string.IsNullOrWhiteSpace(message))
                 return;
             
             var match = FrameworksRegex.Match(message);

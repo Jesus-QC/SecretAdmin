@@ -14,7 +14,6 @@ namespace SecretAdmin.API
     public static class ModuleManager
     {
         public static List<IModule> Modules = new ();
-        public static List<Assembly> Assemblies = new ();
 
         public static void LoadAll()
         {
@@ -59,7 +58,8 @@ namespace SecretAdmin.API
 
                         var module = constructor.Invoke(null) as IModule;
                         module?.OnEnabled();
-                        
+                        module?.OnRegisteringCommands();
+
                         Modules.Add(module);
                     }
                 }

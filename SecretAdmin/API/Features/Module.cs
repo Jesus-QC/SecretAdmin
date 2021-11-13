@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Program;
+using SecretAdmin.Features.Server.Commands;
 
 namespace SecretAdmin.API.Features
 {
@@ -22,6 +24,11 @@ namespace SecretAdmin.API.Features
         public virtual void OnEnabled()
         {
             Log.Raw($"The module {Name} [{Version}] by {Author} was enabled.", ConsoleColor.DarkMagenta);
+        }
+
+        public virtual void OnRegisteringCommands()
+        {
+            Program.CommandHandler.RegisterCommands(Assembly);
         }
     }
 }
