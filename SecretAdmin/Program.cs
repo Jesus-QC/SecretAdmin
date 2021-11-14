@@ -32,12 +32,12 @@ namespace SecretAdmin
             
             if(arguments.Logs)
                 ProgramLogger = new Logger(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"));
-            Utils.ArchiveControlLogs();
-            
+
             if(ConfigManager.SecretAdminConfig.AutoUpdater)
                 AutoUpdater.CheckForUpdates();
             
             Log.Intro();
+            Utils.ArchiveControlLogs();
 
             CommandHandler = new CommandHandler();
             ModuleManager.LoadAll();

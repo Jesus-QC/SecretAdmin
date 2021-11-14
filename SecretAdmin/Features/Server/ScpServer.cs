@@ -10,9 +10,10 @@ namespace SecretAdmin.Features.Server
 {
     public class ScpServer
     {
+        public MemoryManager MemoryManager { get; private set; }
         public SocketServer Socket { get; private set; }
         public ServerConfig Config { get; }
-        
+
         public ServerStatus Status;
         public DateTime StartedTime; //TODO: .
         public int Rounds; //TODO: .
@@ -57,6 +58,9 @@ namespace SecretAdmin.Features.Server
             Status = ServerStatus.Online;
             StartedTime = DateTime.Now;
             Rounds = 0;
+
+            MemoryManager = new MemoryManager(_serverProcess);
+            MemoryManager.Start();
         }
 
         private void OnExited(object o, EventArgs e)
@@ -97,6 +101,8 @@ namespace SecretAdmin.Features.Server
         
         public void Kill()
         {
+            MemoryManager.Dispose();
+            MemoryManager = null;
             Socket?.Dispose();
             Socket = null;
             _serverProcess?.Kill();

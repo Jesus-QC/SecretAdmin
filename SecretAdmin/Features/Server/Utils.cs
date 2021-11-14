@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -34,9 +36,9 @@ namespace SecretAdmin.Features.Server
 
         public static void ArchiveServerLogs()
         {
-            var filesToArchive = (from fileName in Directory.GetFiles(Paths.ServerLogsFolder) let reg = new Regex(@"\[(.*?)\]") let match = reg.Match(fileName) where match.Success && match.Groups[1].Value.Length > 10 && DateTime.TryParse(match.Groups[1].Value[..10], out var d) && d <= DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays) select fileName).ToList();
-            var zipName = Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM-dd-yyyy}-archive.zip");
-            
+            var filesToArchive = (from fileName in Directory.GetFiles(Paths.ServerLogsFolder, "*.log") let reg = new Regex(@"\[(.*?)\]") let match = reg.Match(fileName) where match.Success && match.Groups[1].Value.Length > 15 && DateTime.TryParseExact(match.Groups[1].Value[..16], "MM-dd-yyyy HH.mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) && d <= DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays) select fileName).ToList();
+            var zipName = Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Today.AddDays(-1):MM-dd-yyyy}-archive.zip");
+
             if(!File.Exists(zipName))
                 File.WriteAllText(zipName, "");
             
@@ -51,8 +53,16 @@ namespace SecretAdmin.Features.Server
         
         public static void ArchiveControlLogs()
         {
-            var filesToArchive = (from fileName in Directory.GetFiles(Paths.ProgramLogsFolder) where DateTime.TryParse(fileName.Replace(".log", ""), out var d) && d <= DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays) select fileName).ToList();
-            var zipName = Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM-dd-yyyy}-archive.zip");
+            var filesToArchive = new List<string>();
+            foreach (var fileName in Directory.GetFiles(Paths.ProgramLogsFolder, "*.log"))
+            {
+                if (DateTime.TryParseExact(Path.GetFileName(fileName).Replace(".log", ""), "MM.dd.yyyy-hh.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) && d <= DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays)) 
+                    filesToArchive.Add(fileName);
+            }
+
+            var zipName = Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM-dd-yyyy}-archive.zip");
+            
+            Log.Raw(filesToArchive.Count);
             
             if(!File.Exists(zipName))
                 File.WriteAllText(zipName, "");

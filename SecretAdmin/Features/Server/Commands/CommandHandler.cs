@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using SecretAdmin.Features.Console;
@@ -15,7 +16,7 @@ namespace SecretAdmin.Features.Server.Commands
         [ConsoleCommand("Ram")]
         private void ShowRamUsage()
         {
-            Log.Alert($"RAM USAGE: (X)MB"); // TODO: calculate this
+            Log.Alert($"RAM USAGE: {SecretAdmin.Program.Server.MemoryManager.GetMemory()}MB"); // TODO: calculate this
         }
         
         [ConsoleCommand("exiled")]
