@@ -24,6 +24,11 @@ namespace SecretAdmin.API.Features
             Log.Raw($"The module {Name} [{Version}] by {Author} was enabled.", ConsoleColor.DarkMagenta);
         }
 
+        public virtual void OnDisabled()
+        {
+            Log.Raw($"The module {Name} [{Version}] by {Author} was disabled.", ConsoleColor.DarkMagenta);
+        }
+        
         public virtual void OnRegisteringCommands()
         {
             Program.CommandHandler.RegisterCommands(Assembly);

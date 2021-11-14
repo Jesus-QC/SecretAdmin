@@ -55,7 +55,10 @@ namespace SecretAdmin
 
             if (ConfigManager.SecretAdminConfig.SafeShutdown)
                 Server?.Kill();
-            
+
+            foreach (var module in ModuleManager.Modules)
+                module.OnDisabled();
+
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Everything seems good to go! Bye :)");
         }
