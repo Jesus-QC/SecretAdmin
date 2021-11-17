@@ -15,7 +15,7 @@ namespace SecretAdmin.Features.Program
 
         public static void Load()
         {
-            MainFolder = "SecretAdmin";
+            MainFolder = ".SecretAdmin";
             LogsFolder = Path.Combine(MainFolder, "Logs");
             ServerLogsFolder = Path.Combine(LogsFolder, "Server");
             ProgramLogsFolder = Path.Combine(LogsFolder, "SecretAdmin");

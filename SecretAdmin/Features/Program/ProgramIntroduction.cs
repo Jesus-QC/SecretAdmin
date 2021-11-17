@@ -22,12 +22,12 @@ namespace SecretAdmin.Features.Program
 
             var cfg = new MainConfig
             {
-                AutoUpdater = GetOption("Do you want to enable the auto updater?"),
-                ManualStart = GetOption("Do you want to manually have to enter a key to start the server?"),
-                SafeShutdown = GetOption("Do you want to safe shutdown the game processes?"),
+                AutoUpdater = GetOption("Do you want to enable the auto updater?", true),
+                ManualStart = GetOption("Do you want to manually have to enter a key to start the server?", false),
+                SafeShutdown = GetOption("Do you want to safe shutdown the game processes?", true),
                 ArchiveLogsDays = GetOption("In how many days the logs should be archived?", "1"),
-                RestartOnCrash = GetOption("Should the server automatically restart itself when it crashes?"),
-                RestartWithLowMemory = GetOption("Should the server restart itself when it has low memory?"),
+                RestartOnCrash = GetOption("Should the server automatically restart itself when it crashes?", true),
+                RestartWithLowMemory = GetOption("Should the server restart itself when it has low memory?", true),
                 MaxDefaultMemory = GetOption("Max memory the server can use, in MB.", "2048")
             };
 
@@ -54,14 +54,16 @@ namespace SecretAdmin.Features.Program
             System.Console.ForegroundColor = ConsoleColor.Green;
             System.Console.WriteLine("Press any key to continue.");
             System.Console.ReadKey();
-            Directory.CreateDirectory("SecretAdmin");
+            Directory.CreateDirectory(Paths.MainFolder);
         }
 
-        private static bool GetOption(string msg)
+        private static bool GetOption(string msg, bool def)
         {
             START:
             Log.Alert($"{msg} yes (y) / no (n)");
             var opt = System.Console.ReadLine()?.ToLower();
+            if (string.IsNullOrWhiteSpace(opt))
+                return def;
             if (!string.IsNullOrWhiteSpace(opt) && (opt[0] == 'y' || opt[0] == 'n'))
                 return opt[0] == 'y';
             Log.Alert("An error occurred parsing the input, please try again!");
