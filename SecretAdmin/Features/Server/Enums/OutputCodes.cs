@@ -10,7 +10,6 @@
         ExitActionReset = 0x13,
         ExitActionShutdown = 0x14,
         ExitActionSilentShutdown = 0x15,
-        ExitActionRestart = 0x16,
-        RoundEnd = 0x17
+        ExitActionRestart = 0x16
     }
 }

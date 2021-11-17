@@ -1,9 +1,8 @@
-﻿using System;
-using SecretAdmin.Features.Console;
+﻿using SecretAdmin.Features.Console;
 
 namespace SecretAdmin.Features.Program
 {
-    public class InputManager
+    public static class InputManager
     {
         public static void Start()
         {

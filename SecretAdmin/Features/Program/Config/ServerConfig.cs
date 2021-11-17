@@ -2,6 +2,7 @@
 {
     public class ServerConfig
     {
-        // TODO: this
+        public uint Port { get; set; } = 7777;
+        public int RoundsToRestart { get; set; } = -1;
     }
 }

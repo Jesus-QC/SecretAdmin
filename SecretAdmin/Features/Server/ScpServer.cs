@@ -1,58 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
 using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server.Enums;
-using static System.String;
+using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
 namespace SecretAdmin.Features.Server
 {
     public class ScpServer
     {
+        public MemoryManager MemoryManager { get; private set; }
         public SocketServer Socket { get; private set; }
-        public ServerStatus Status;
+        public ServerConfig Config { get; }
 
+        public ServerStatus Status;
+        public DateTime StartedTime; //TODO: .
+        public int Rounds; //TODO: .
+        
         private Process _serverProcess;
-        private readonly uint _port;
+        private Logger _logger;
+        private Logger _outputLogger;
         
-        public DateTime StartedTime;
-        public int Rounds;
-        
-        public ScpServer(uint port) => _port = port;
+        public ScpServer(ServerConfig config) => Config = config;
 
         public void Start()
         {
-            var fileName = "SCPSL.x86_64";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                fileName = "SCPSL.exe";
-
-            if (!File.Exists(fileName))
+            if (!Utils.GetExecutable(out var fileName))
             {
-                System.Console.WriteLine();
-                Log.Alert("Executable not found, make sure this file is on the same folder as LocalAdmin.");
-                System.Console.ReadLine();
+                System.Console.ReadKey();
                 Environment.Exit(-1);
+                return;
             }
             
+            Utils.ArchiveServerLogs();
+            _logger = new Logger(Utils.GetLogsName(Config.Port));
+            _outputLogger = new Logger(Utils.GetOutputLogsName(Config.Port));
+
             _serverProcess?.Dispose();
             Socket = new SocketServer(this);
             
-            var gameArgs = new List<string> { "-batchmode", "-nographics", "-silent-crashes", "-nodedicateddelete", $"-id{Process.GetCurrentProcess().Id}", $"-console{Socket.Port}", $"-port{_port}" };
-            var startInfo = new ProcessStartInfo(fileName, Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false };
+            var gameArgs = new List<string> { "-batchmode", "-nographics", "-silent-crashes", "-nodedicateddelete", $"-id{Process.GetCurrentProcess().Id}", $"-console{Socket.Port}", $"-port{Config.Port}" };
+            var startInfo = new ProcessStartInfo(fileName, string.Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
             
-            System.Console.WriteLine();
-            Log.Alert("Starting server on port 7777.");
-            System.Console.WriteLine();
-            
+            Log.WriteLine();
+            Log.Alert($"Starting server on port {Config.Port}.");
+            Log.WriteLine();
+
             _serverProcess = Process.Start(startInfo);
             _serverProcess!.Exited += OnExited;
             _serverProcess.EnableRaisingEvents = true;
-            
+            _serverProcess.ErrorDataReceived += (_, args)  => AddOutputLog(args.Data, "[STDERR]");
+            _serverProcess.OutputDataReceived += (_, args) => AddOutputLog(args.Data, "[STDOUT]");
+            _serverProcess.BeginErrorReadLine();
+            _serverProcess.BeginOutputReadLine();
+
             Status = ServerStatus.Online;
             StartedTime = DateTime.Now;
+            Rounds = 0;
+
+            MemoryManager = new MemoryManager(_serverProcess);
+            MemoryManager.Start();
         }
 
         private void OnExited(object o, EventArgs e)
@@ -61,11 +69,13 @@ namespace SecretAdmin.Features.Server
             {
                 case ServerStatus.Restarting:
                     Restart();
-                    break;
+                    return;
+                
                 case ServerStatus.Exiting:
                     Kill();
                     Environment.Exit(0);
-                    break;
+                    return;
+                
                 case ServerStatus.Online:
                     Log.Raw(@"
    █████████                              █████      ███
@@ -75,9 +85,15 @@ namespace SecretAdmin.Features.Server
 ░███          ░███ ░░░   ███████ ░░█████  ░███ ░███ ░███
 ░░███     ███ ░███      ███░░███  ░░░░███ ░███ ░███ ░░░ 
  ░░█████████  █████    ░░████████ ██████  ████ █████ ███
-  ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ", ConsoleColor.DarkYellow, false);
-                    Restart();
-                    break;
+  ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ",
+                        ConsoleColor.DarkYellow, false);
+
+                    if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+                        Restart();
+                    else
+                        Log.Raw("Server crashed, press any key to close SecretAdmin."); System.Console.ReadKey();
+                    return;
+                
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -85,6 +101,8 @@ namespace SecretAdmin.Features.Server
         
         public void Kill()
         {
+            MemoryManager.Dispose();
+            MemoryManager = null;
             Socket?.Dispose();
             Socket = null;
             _serverProcess?.Kill();
@@ -92,8 +110,31 @@ namespace SecretAdmin.Features.Server
 
         public void Restart()
         {
+            SEvents.OnRestarted();
             Kill();
             Start();
+        }
+
+        public void ForceRestart()
+        {
+            Status = ServerStatus.Restarting;
+            Restart();
+        }
+
+        public void AddLog(string message, string title = null)
+        {
+            if(string.IsNullOrEmpty(message))
+                return;
+            
+            _logger.AppendLog(title == null ? message : $"{title} {message}", true);
+        }
+        
+        public void AddOutputLog(string message, string title = null)
+        {
+            if(string.IsNullOrEmpty(message))
+                return;
+            
+            _outputLogger.AppendLog(title == null ? message : $"{title} {message}", true);
         }
     }
 }

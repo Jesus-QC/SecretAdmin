@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Drawing;
 using System.Text.RegularExpressions;
+using SecretAdmin.API.Events.EventArgs;
 using SConsole = System.Console;
+using static SecretAdmin.Program;
+using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
 namespace SecretAdmin.Features.Console
 {
-    public class Log
+    public static class Log 
     {
         private static readonly Regex FrameworksRegex = new (@"\[(DEBUG|INFO|WARN|ERROR)\] (\[.*?\]) (.*)", RegexOptions.Compiled | RegexOptions.Singleline);
 
@@ -13,6 +15,7 @@ namespace SecretAdmin.Features.Console
         
         public static void Intro()
         {
+            SConsole.Clear();
             WriteLine(@" .--.                        .-.    .--.    .-.          _       
 : .--'                      .' `.  : .; :   : :         :_;      
 `. `.  .--.  .--. .--.  .--.`. .'  :    : .-' :,-.,-.,-..-.,-.,-.
@@ -22,7 +25,12 @@ namespace SecretAdmin.Features.Console
             Write($"Secret Admin - Version v{SecretAdmin.Program.Version}");
             WriteLine(" by Jesus-QC", ConsoleColor.Blue);
             WriteLine("Released under MIT License Copyright © Jesus-QC 2021", ConsoleColor.Red);
+
+            if (!ConfigManager.SecretAdminConfig.ManualStart)
+                return;
+            
             WriteLine("Press any key to continue.", ConsoleColor.Green);
+            SConsole.ReadKey();
         }
         
         public static void Input(string message, string title = "SERVER")
@@ -32,7 +40,7 @@ namespace SecretAdmin.Features.Console
             Raw(message, ConsoleColor.Magenta, false);
         }
         
-        public static void Alert(string message, bool showTimeStamp = true)
+        public static void Alert(object message, bool showTimeStamp = true)
         {
             if (showTimeStamp)
                 Write($"[{DateTime.Now:T}] ", ConsoleColor.DarkRed);
@@ -44,7 +52,7 @@ namespace SecretAdmin.Features.Console
         
         // Alerts
         
-        public static void Raw(string message, ConsoleColor color = ConsoleColor.White, bool showTimeStamp = true) => WriteLine(showTimeStamp ? $"[{DateTime.Now:T}] {message}" : message, color);
+        public static void Raw(object message, ConsoleColor color = ConsoleColor.White, bool showTimeStamp = true) => WriteLine(showTimeStamp ? $"[{DateTime.Now:T}] {message}" : message, color);
         
         private static void Info(string title, string message)
         {
@@ -78,21 +86,29 @@ namespace SecretAdmin.Features.Console
             WriteLine(message, ConsoleColor.Yellow);
         }
 
-        private static void WriteLine(string message, ConsoleColor color = ConsoleColor.White)
+        public static void WriteLine(object message = null, ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.WriteLine(message);
+            ProgramLogger?.AppendLog(message, true);
         }
         
-        private static void Write(string message, ConsoleColor color = ConsoleColor.White)
+        public static void Write(object message = null, ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             SConsole.Write(message);
+            ProgramLogger?.AppendLog(message);
         }
         
         public static void HandleMessage(string message, byte code)
         {
-            if(message == null)
+            var ev = new ReceivedMessageEventArgs(message, code);
+            SEvents.OnReceivedMessage(ev);
+
+            message = ev.Message;
+            code = ev.Code;
+            
+            if(!ev.IsAllowed|| string.IsNullOrWhiteSpace(message))
                 return;
             
             var match = FrameworksRegex.Match(message);
@@ -117,8 +133,6 @@ namespace SecretAdmin.Features.Console
                             break;
                     }
                 }
-                
-                
             }
             else
             {

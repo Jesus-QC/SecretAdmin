@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server.Enums;
 
 namespace SecretAdmin.Features.Server.Commands
@@ -13,7 +16,13 @@ namespace SecretAdmin.Features.Server.Commands
         [ConsoleCommand("Ram")]
         private void ShowRamUsage()
         {
-            Log.Alert($"RAM USAGE: (X)MB"); // TODO: calculate this
+            Log.Alert($"RAM USAGE: {SecretAdmin.Program.Server.MemoryManager.GetMemory()}MB"); // TODO: calculate this
+        }
+        
+        [ConsoleCommand("exiled")]
+        private void ExiledInstall()
+        {
+            ExiledInstaller.InstallExiled();
         }
         
         [ConsoleCommand("Quit")]
@@ -32,14 +41,43 @@ namespace SecretAdmin.Features.Server.Commands
         public CommandHandler()
         {
             var ti = typeof(CommandHandler).GetTypeInfo();
-            var methods = ti.DeclaredMethods;
             
-            foreach (var method in methods)
+            foreach (var method in ti.DeclaredMethods)
             {
                 var attributes = method.GetCustomAttributes();
                 
                 if (attributes.FirstOrDefault() is ConsoleCommandAttribute query)
                     _commands.Add(query.Name.ToLower(), method);
+            }
+        }
+
+        public void RegisterCommands(Assembly assembly)
+        {
+            foreach (var type in assembly.GetTypes())
+            {
+                foreach (var method in type.GetTypeInfo().DeclaredMethods)
+                {
+                    var attributes = method.GetCustomAttributes();
+
+                    if (attributes.FirstOrDefault() is not ConsoleCommandAttribute query) 
+                        continue;
+                    
+                    if (!method.IsStatic)
+                    {
+                        Log.Raw($"[Warn] The command {query.Name} couldn't be registered due to not being static.", ConsoleColor.DarkYellow);
+                        continue;
+                    }
+
+                    var cmd = query.Name.ToLower();
+                    
+                    if (_commands.ContainsKey(cmd))
+                    {
+                        Log.Raw($"[Error] The command \"{query.Name}\" already exists inside the module {_commands[cmd].Module.Assembly.GetName().Name}.", ConsoleColor.Red);
+                        continue;
+                    }
+
+                    _commands.Add(cmd, method);
+                }
             }
         }
 

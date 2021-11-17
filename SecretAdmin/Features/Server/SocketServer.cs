@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Globalization;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
-using System.Threading;
+using System.Net.Sockets;
 using System.Threading.Tasks;
+using SecretAdmin.API.Events.EventArgs;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
+using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
 namespace SecretAdmin.Features.Server
 {
@@ -20,6 +19,7 @@ namespace SecretAdmin.Features.Server
         private readonly TcpListener _listener;
         private TcpClient _client;
         private NetworkStream _stream;
+        private SilentCrashHandler _crashHandler;
 
         public SocketServer(ScpServer server)
         {
@@ -35,6 +35,9 @@ namespace SecretAdmin.Features.Server
                 _stream = _client.GetStream();
                 Task.Run(ListenRequests);
             }, _listener);
+
+            _crashHandler = new SilentCrashHandler(this);
+            _crashHandler.Start();
         }
 
         public async void ListenRequests()
@@ -51,14 +54,14 @@ namespace SecretAdmin.Features.Server
                 
                 var messageBuffer = new byte[length];
                 var messageBytesRead = await _stream.ReadAsync(messageBuffer, 0, length);
-                
+
                 if (codeBytes <= 0 || lengthBytes != sizeof(int) || messageBytesRead <= 0)
                 {
                     if(_server.Status == ServerStatus.Online)
                         Log.Alert("Socket disconnected.");
                     break;
                 }
-                
+
                 if (codeType >= 16)
                 {
                     HandleAction(codeType);
@@ -69,12 +72,17 @@ namespace SecretAdmin.Features.Server
                     return;
                 
                 var message = Encoding.GetString(messageBuffer, 0, length);
-                Log.HandleMessage(message, codeType);
+                if (HandleSecretAdminEvents(message))
+                {
+                    _server.AddLog(message, $"[{DateTime.Now:T}]");
+                    Log.HandleMessage(message, codeType);
+                }
             }
         }
         
         public void Dispose()
         {
+            _crashHandler?.Dispose();
             _client?.Close();
             _listener?.Stop();
         }
@@ -83,7 +91,7 @@ namespace SecretAdmin.Features.Server
         {
             if (_stream == null)
             {
-                Log.Alert($"The server hasn't been initialized yet");
+                Log.Alert("The server hasn't been initialized yet");
                 return;
             }
 
@@ -104,49 +112,71 @@ namespace SecretAdmin.Features.Server
         
         public void HandleAction(byte action)
         {
-            switch ((OutputCodes)action)
+            var ev = new ReceivedActionEventArgs(action);
+            SEvents.OnReceivedAction(ev);
+            
+            if(!ev.IsEnabled)
+                return;
+            
+            switch (ev.OutputCode)
             {
-                // This seems to show up at the waiting for players event
                 case OutputCodes.RoundRestart:
+                    SEvents.OnRestartedRound();
                     Log.Raw("Waiting for players.", ConsoleColor.DarkCyan);
+                    _server.AddLog("Waiting for players.");
                     break;
 
                 case OutputCodes.IdleEnter:
                     Log.Raw("Server entered idle mode.", ConsoleColor.DarkYellow);
+                    _server.AddLog("Server entered idle mode.");
                     break;
 
                 case OutputCodes.IdleExit:
                     Log.Raw("Server exited idle mode.", ConsoleColor.DarkYellow);
+                    _server.AddLog("Server exited idle mode.");
                     break;
                 
                 case OutputCodes.ExitActionReset:
-                    Log.Alert("ExitActionReset."); // DEBUG: Dont remove
                     _server.Status = ServerStatus.Online;
                     break;
                 
                 case OutputCodes.ExitActionShutdown:
-                    Log.Alert("ExitActionShutdown."); // DEBUG: Dont remove
                     _server.Status = ServerStatus.Exiting;
                     break;
                 
                 case OutputCodes.ExitActionSilentShutdown:
-                    Log.Alert("ExitActionSilentShutdown."); // DEBUG: Dont remove
                     _server.Status = ServerStatus.Exiting;
                     break;
                 
                 case OutputCodes.ExitActionRestart:
-                    Log.Alert("ExitActionRestart"); // DEBUG: Dont remove
                     _server.Status = ServerStatus.Restarting;
                     break;
 
-                case OutputCodes.RoundEnd:
-                    Log.Alert("RoundEnd"); // DEBUG: Dont remove
-                    break;
-
                 default:
-                    Log.Alert($"Received unknown output code ({action})  ({(OutputCodes)action}), is SecretAdmin up to date?");
+                    Log.Alert($"Received unknown output code ({(OutputCodes)action}), is SecretAdmin up to date?");
                     break;
             }
+        }
+        
+        private bool HandleSecretAdminEvents(string message)
+        {
+            if (message == "Command saping does not exist!")
+            {
+                _crashHandler.OnReceivePing();
+                return false;
+            }
+
+            if (message.StartsWith("Round finished!") || message.StartsWith("Round restart forced."))
+            {
+                SEvents.OnRestartingRound();
+                _server.Rounds++;
+                
+                if (_server.Config.RoundsToRestart >= _server.Rounds && _server.Status == ServerStatus.Online)
+                    _server.ForceRestart();
+                return true;
+            }
+
+            return true;
         }
     }
 }
