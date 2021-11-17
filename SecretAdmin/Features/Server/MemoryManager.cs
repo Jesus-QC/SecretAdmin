@@ -17,10 +17,10 @@ namespace SecretAdmin.Features.Server
         public void Start()
         {
             _killed = false;
-            //Task.Run(CheckUse);
+            Task.Run(CheckUse);
         }
         
-        /*private async void CheckUse()
+        private async void CheckUse()
         {
             await Task.Delay(5000);
             while (!_killed)
@@ -34,13 +34,17 @@ namespace SecretAdmin.Features.Server
                 {
                     Log.Raw($"LOW MEMORY. USING {mem}MB / {ConfigManager.SecretAdminConfig.MaxDefaultMemory}");
                     await Task.Delay(2500);
-                    if(ConfigManager.SecretAdminConfig.RestartWithLowMemory)
+                    
+                    if (ConfigManager.SecretAdminConfig.RestartWithLowMemory)
+                    {
                         SecretAdmin.Program.Server.ForceRestart();
+                        return;
+                    }
                 }
 
                 await Task.Delay(5000);
             }
-        }*/
+        }
         
         public long GetMemory()
         {

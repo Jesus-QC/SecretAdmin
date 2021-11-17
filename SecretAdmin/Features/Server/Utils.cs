@@ -61,9 +61,7 @@ namespace SecretAdmin.Features.Server
             }
 
             var zipName = Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM-dd-yyyy}-archive.zip");
-            
-            Log.Raw(filesToArchive.Count);
-            
+
             if(!File.Exists(zipName))
                 File.WriteAllText(zipName, "");
             
