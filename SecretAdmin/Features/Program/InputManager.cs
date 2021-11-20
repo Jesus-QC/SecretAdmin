@@ -12,7 +12,7 @@ namespace SecretAdmin.Features.Program
 
                 if (string.IsNullOrWhiteSpace(input))
                     continue;
-
+                
                 input = input.TrimStart();
                 
                 Log.DeletePrevConsoleLine();

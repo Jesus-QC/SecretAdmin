@@ -6,6 +6,7 @@ using System.Reflection;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server.Enums;
+using Spectre.Console;
 
 namespace SecretAdmin.Features.Server.Commands
 {
@@ -38,6 +39,21 @@ namespace SecretAdmin.Features.Server.Commands
             SecretAdmin.Program.Server.Socket.SendMessage("exit");
         }
 
+        [ConsoleCommand("Files")]
+        private void FilesCommand()
+        {
+            var root = new Tree($"\n[white]{Paths.MainFolder}[/]");
+            var logs = root.AddNode("[yellow]Logs[/]");
+            root.AddNode("[yellow]Configs[/]");
+            root.AddNode("[yellow]Modules[/]");
+            root.AddNode("[blue]config.yml[/]");
+            logs.AddNode("[lime]SecretAdmin[/]");
+            logs.AddNode("[lime]Server[/]");
+
+            AnsiConsole.Write(root);
+            Log.WriteLine();
+        }
+        
         public CommandHandler()
         {
             var ti = typeof(CommandHandler).GetTypeInfo();

@@ -6,6 +6,7 @@ using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server;
 using SecretAdmin.Features.Server.Commands;
+using Spectre.Console;
 
 namespace SecretAdmin
 {
@@ -14,7 +15,6 @@ namespace SecretAdmin
         public static Version Version { get; } = new (0, 0, 0,1);
         public static ScpServer Server { get; private set; }
         public static ConfigManager ConfigManager { get; private set; }
-        public static Logger ProgramLogger { get; private set; }
         public static CommandHandler CommandHandler { get; private set; }
 
         static void Main(string[] args)
@@ -22,6 +22,8 @@ namespace SecretAdmin
             AppDomain.CurrentDomain.ProcessExit += OnExit;
             Console.Title = $"SecretAdmin [v{Version}]";
 
+            AnsiConsole.Record();
+            
             var arguments = ArgumentsManager.GetArgs(args);
             
             Paths.Load();
@@ -29,14 +31,12 @@ namespace SecretAdmin
             if (ProgramIntroduction.FirstTime || arguments.Reconfigure)
                 ProgramIntroduction.ShowIntroduction();
             ConfigManager.LoadConfig();
-            
-            if(arguments.Logs)
-                ProgramLogger = new Logger(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"));
 
             if(ConfigManager.SecretAdminConfig.AutoUpdater)
                 AutoUpdater.CheckForUpdates();
             
             Log.Intro();
+
             Utils.ArchiveControlLogs();
 
             CommandHandler = new CommandHandler();
@@ -61,6 +61,7 @@ namespace SecretAdmin
 
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Everything seems good to go! Bye :)");
+            File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"), AnsiConsole.ExportText());
         }
     }
 }

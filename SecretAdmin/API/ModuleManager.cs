@@ -5,6 +5,7 @@ using System.Reflection;
 using SecretAdmin.API.Features;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
+using Spectre.Console;
 using Module = SecretAdmin.API.Features.Module;
 
 namespace SecretAdmin.API
@@ -16,29 +17,32 @@ namespace SecretAdmin.API
         public static void LoadAll()
         {
             Log.WriteLine();
-            Log.Raw("Loading modules dependencies!", ConsoleColor.DarkCyan);
+            Log.Raw("[lightpink1]Loading module dependencies...[/]", showTimeStamp: false);
 
             var startTime = DateTime.Now;
+            var count = 0;
             
             foreach (var file in Directory.GetFiles(Paths.ModulesDependenciesFolder, "*.dll"))
             {
                 try
                 {
                     var assembly = Assembly.UnsafeLoadFrom(file);
-                    Log.Raw($"Dependency {assembly.GetName().Name} ({assembly.GetName().Version}) has been loaded!");
+                    count++;
+                    Log.Raw($"[lightcyan1]Dependency {assembly.GetName().Name} ({assembly.GetName().Version}) has been loaded![/]", showTimeStamp: false);
                 }
                 catch (Exception e)
                 {
-                    Log.Raw($"Couldn't load the dependency in the path {file}\n{e}", ConsoleColor.Red);
-                    throw;
+                    Log.Raw($"[deeppink2]Couldn't load the dependency in the path {file}[/]", showTimeStamp: false);
+                    AnsiConsole.WriteException(e);
                 }
             }
-            
-            Log.Raw($"Dependencies loaded in {(DateTime.Now - startTime).TotalMilliseconds}ms", ConsoleColor.Cyan);
-            Log.Raw("Loading modules!", ConsoleColor.DarkCyan);
+
+            Log.Raw(count > 0 ? $"[cornflowerblue]{count} Dependencies loaded in {(DateTime.Now - startTime).TotalMilliseconds}ms[/]" : "[cornflowerblue]No Dependencies found.[/]", showTimeStamp: false);
+            Log.Raw("[lightpink1]Loading modules...[/]", showTimeStamp: false);
             
             startTime = DateTime.Now;
-
+            count = 0;
+            
             foreach (var file in Directory.GetFiles(Paths.ModulesFolder, "*.dll"))
             {
                 var assembly = Assembly.Load(File.ReadAllBytes(file));
@@ -59,15 +63,17 @@ namespace SecretAdmin.API
                         module?.OnRegisteringCommands();
 
                         Modules.Add(module);
+                        count++;
                     }
                 }
                 catch (Exception e)
                 {
-                    Log.Raw(e, ConsoleColor.Red);
+                    Log.Raw($"[deeppink2]Couldn't load the module in the path {file}[/]", showTimeStamp: false);
+                    AnsiConsole.WriteException(e);
                 }
             }
             
-            Log.Raw($"Modules loaded in {(DateTime.Now - startTime).TotalMilliseconds}ms",  ConsoleColor.Cyan);
+            Log.Raw(count > 0 ? $"[cornflowerblue]{count} Modules loaded in {(DateTime.Now - startTime).TotalMilliseconds}ms[/]" : "[cornflowerblue]No Modules found.[/]", showTimeStamp: false);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SecretAdmin.API.Events.EventArgs;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
+using Spectre.Console;
 using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
 namespace SecretAdmin.Features.Server
@@ -106,7 +107,7 @@ namespace SecretAdmin.Features.Server
             }
             catch (Exception e)
             {
-                Log.Alert("ERROR " + e);
+                AnsiConsole.WriteException(e);
             }
         }
         
@@ -122,17 +123,17 @@ namespace SecretAdmin.Features.Server
             {
                 case OutputCodes.RoundRestart:
                     SEvents.OnRestartedRound();
-                    Log.Raw("Waiting for players.", ConsoleColor.DarkCyan);
+                    Log.Raw($"[[{DateTime.Now:T}]] [honeydew2]Waiting for players.[/]", showTimeStamp: false);
                     _server.AddLog("Waiting for players.");
                     break;
 
                 case OutputCodes.IdleEnter:
-                    Log.Raw("Server entered idle mode.", ConsoleColor.DarkYellow);
+                    Log.Raw($"[[{DateTime.Now:T}]] [plum2]Server entered idle mode.[/]", showTimeStamp: false);
                     _server.AddLog("Server entered idle mode.");
                     break;
 
                 case OutputCodes.IdleExit:
-                    Log.Raw("Server exited idle mode.", ConsoleColor.DarkYellow);
+                    Log.Raw($"[[{DateTime.Now:T}]] [plum2]Server exited idle mode.[/]", showTimeStamp: false);
                     _server.AddLog("Server exited idle mode.");
                     break;
                 
