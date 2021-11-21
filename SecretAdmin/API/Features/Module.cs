@@ -21,12 +21,12 @@ namespace SecretAdmin.API.Features
         
         public virtual void OnEnabled()
         {
-            Log.Raw($"The module {Name} [{Version}] by {Author} was enabled.", ConsoleColor.DarkMagenta);
+            Log.SpectreRaw($"The module {Name} [{Version}] by {Author} has been enabled.", "lightcyan1");
         }
 
         public virtual void OnDisabled()
         {
-            Log.Raw($"The module {Name} [{Version}] by {Author} was disabled.", ConsoleColor.DarkMagenta);
+            Log.SpectreRaw($"The module {Name} [{Version}] by {Author} has been disabled.", "lightcyan1");
         }
         
         public virtual void OnRegisteringCommands()

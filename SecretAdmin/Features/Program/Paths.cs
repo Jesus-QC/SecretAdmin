@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace SecretAdmin.Features.Program
 {
@@ -15,7 +16,7 @@ namespace SecretAdmin.Features.Program
 
         public static void Load()
         {
-            MainFolder = "SecretAdmin";
+            MainFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SecretAdmin");
             LogsFolder = Path.Combine(MainFolder, "Logs");
             ServerLogsFolder = Path.Combine(LogsFolder, "Server");
             ProgramLogsFolder = Path.Combine(LogsFolder, "SecretAdmin");

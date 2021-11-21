@@ -101,7 +101,7 @@ namespace SecretAdmin.Features.Server
         
         public void Kill()
         {
-            MemoryManager.Dispose();
+            MemoryManager?.Dispose();
             MemoryManager = null;
             Socket?.Dispose();
             Socket = null;

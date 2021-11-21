@@ -4,6 +4,7 @@
     {
         Online,
         Exiting,
-        Restarting
+        Restarting,
+        Idling
     }
 }

@@ -2,7 +2,6 @@
 {
     public static class ArgumentsManager
     {
-        // TODO: this
         /*
          * Arguments:
          * --reconfigure -r
