@@ -1,5 +1,5 @@
-# SecretAdmin Alpha
-###### [**Checkout the discord for support.**](https://discord.gg/N697PNt9F7) ![Discord Shield](https://discordapp.com/api/guilds/904845382159327313/widget.png?style=shield)
+# SecretAdmin Alpha | ![Discord Shield](https://discordapp.com/api/guilds/904845382159327313/widget.png?style=shield)
+###### [**Checkout the discord for support.**](https://discord.gg/N697PNt9F7)
 
 - Beautiful Colors.
 - Highly customizable (Modules).
