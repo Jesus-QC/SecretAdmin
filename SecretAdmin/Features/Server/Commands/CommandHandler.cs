@@ -54,6 +54,12 @@ namespace SecretAdmin.Features.Server.Commands
             Log.WriteLine();
         }
         
+        [ConsoleCommand("sacreate")]
+        private void CreateServerFileCommand()
+        {
+            
+        }
+        
         public CommandHandler()
         {
             var ti = typeof(CommandHandler).GetTypeInfo();

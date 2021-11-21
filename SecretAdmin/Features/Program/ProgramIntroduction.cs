@@ -47,14 +47,13 @@ namespace SecretAdmin.Features.Program
                 RoundsToRestart = Log.GetOption("In how many rounds the server should restart itself. -1 disable, 0 every round", -1)
             };
             
+            Log.SpectreRaw($"That were your default server configs! You can edit them always in {Path.Combine(Paths.ServerConfigsFolder, "default.yml")}.","skyblue2");
             SecretAdmin.Program.ConfigManager.SaveServerConfig(srvConfig);
 
             // Start the server
             
             Log.Alert("Ok, thats all! Time to enjoy the server :)");
-            System.Console.ForegroundColor = ConsoleColor.Green;
-            System.Console.WriteLine("Press any key to continue.");
-            System.Console.ReadKey();
+            Log.ReadKey();
             Directory.CreateDirectory(Paths.MainFolder);
         }
     }
