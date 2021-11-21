@@ -17,7 +17,7 @@ namespace SecretAdmin.API
         public static void LoadAll()
         {
             Log.WriteLine();
-            Log.Raw("[lightpink1]Loading module dependencies...[/]", showTimeStamp: false);
+            Log.SpectreRaw("Loading module dependencies...", "lightpink1");
 
             var startTime = DateTime.Now;
             var count = 0;
@@ -28,17 +28,17 @@ namespace SecretAdmin.API
                 {
                     var assembly = Assembly.UnsafeLoadFrom(file);
                     count++;
-                    Log.Raw($"[lightcyan1]Dependency {assembly.GetName().Name} ({assembly.GetName().Version}) has been loaded![/]", showTimeStamp: false);
+                    Log.SpectreRaw($"Dependency {assembly.GetName().Name} ({assembly.GetName().Version}) has been loaded!", "lightcyan1");
                 }
                 catch (Exception e)
                 {
-                    Log.Raw($"[deeppink2]Couldn't load the dependency in the path {file}[/]", showTimeStamp: false);
+                    Log.SpectreRaw($"Couldn't load the dependency in the path {file}", "deeppink2");
                     AnsiConsole.WriteException(e);
                 }
             }
 
-            Log.Raw(count > 0 ? $"[cornflowerblue]{count} Dependencies loaded in {(DateTime.Now - startTime).TotalMilliseconds}ms[/]" : "[cornflowerblue]No Dependencies found.[/]", showTimeStamp: false);
-            Log.Raw("[lightpink1]Loading modules...[/]", showTimeStamp: false);
+            Log.SpectreRaw(count > 0 ? $"{count} Dependencies loaded in {(DateTime.Now - startTime).TotalMilliseconds}ms" : "No Dependencies found.", "cornflowerblue");
+            Log.SpectreRaw("Loading modules...", "lightpink1");
             
             startTime = DateTime.Now;
             count = 0;
@@ -68,12 +68,12 @@ namespace SecretAdmin.API
                 }
                 catch (Exception e)
                 {
-                    Log.Raw($"[deeppink2]Couldn't load the module in the path {file}[/]", showTimeStamp: false);
+                    Log.SpectreRaw($"Couldn't load the module in the path {file}", "deeppink2");
                     AnsiConsole.WriteException(e);
                 }
             }
             
-            Log.Raw(count > 0 ? $"[cornflowerblue]{count} Modules loaded in {(DateTime.Now - startTime).TotalMilliseconds}ms[/]" : "[cornflowerblue]No Modules found.[/]", showTimeStamp: false);
+            Log.SpectreRaw(count > 0 ? $"{count} Modules loaded in {(DateTime.Now - startTime).TotalMilliseconds}ms" : "No Modules found.", "cornflowerblue");
         }
     }
 }

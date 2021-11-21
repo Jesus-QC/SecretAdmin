@@ -1,4 +1,5 @@
 ﻿using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Server.Enums;
 
 namespace SecretAdmin.Features.Program
 {
@@ -24,6 +25,12 @@ namespace SecretAdmin.Features.Program
 
         private static void ManageInput(string input)
         {
+            if (SecretAdmin.Program.Server.Status == ServerStatus.Restarting)
+            {
+                Log.Alert("The server hasn't been initialized yet.");
+                return;
+            }
+
             Log.Input(input);
             SecretAdmin.Program.Server.Socket.SendMessage(input);
         }

@@ -123,17 +123,19 @@ namespace SecretAdmin.Features.Server
             {
                 case OutputCodes.RoundRestart:
                     SEvents.OnRestartedRound();
-                    Log.Raw($"[[{DateTime.Now:T}]] [honeydew2]Waiting for players.[/]", showTimeStamp: false);
+                    Log.SpectreRaw("Waiting for players.", "lightsteelblue1", true, "slateblue1");
                     _server.AddLog("Waiting for players.");
                     break;
 
                 case OutputCodes.IdleEnter:
-                    Log.Raw($"[[{DateTime.Now:T}]] [plum2]Server entered idle mode.[/]", showTimeStamp: false);
+                    _server.Status = ServerStatus.Idling;
+                    Log.SpectreRaw("Server entered idle mode.", "plum2", true, "slateblue1");
                     _server.AddLog("Server entered idle mode.");
                     break;
 
                 case OutputCodes.IdleExit:
-                    Log.Raw($"[[{DateTime.Now:T}]] [plum2]Server exited idle mode.[/]", showTimeStamp: false);
+                    _server.Status = ServerStatus.Online;
+                    Log.SpectreRaw("Server exited idle mode.", "plum2", true, "slateblue1");
                     _server.AddLog("Server exited idle mode.");
                     break;
                 

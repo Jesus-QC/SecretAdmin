@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Server.Enums;
 using Main = SecretAdmin.Program;
 
 namespace SecretAdmin.Features.Server
@@ -24,8 +25,11 @@ namespace SecretAdmin.Features.Server
             await Task.Delay(15000);
             while (!_killed)
             {
-                _server.SendMessage("saping");
-                _pingCount++;
+                if (Main.Server.Status == ServerStatus.Online)
+                {
+                    _server.SendMessage("saping");
+                    _pingCount++;
+                }
                 await Task.Delay(5000);
                 if (_pingCount == 3)
                 {

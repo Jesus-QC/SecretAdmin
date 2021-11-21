@@ -36,7 +36,7 @@ namespace SecretAdmin.Features.Program
             SecretAdmin.Program.ConfigManager.SaveConfig(cfg);
             
             Log.WriteLine();
-            Log.Raw("[skyblue2]That were all the program configs! You can edit them always in /SecretAdmin/config.yml.[/]", showTimeStamp: false);
+            Log.SpectreRaw($"That were all the program configs! You can edit them always in {Paths.ProgramConfig}.","skyblue2");
             Log.Alert("Time to edit the default server configs.\n");
 
             // Server Options

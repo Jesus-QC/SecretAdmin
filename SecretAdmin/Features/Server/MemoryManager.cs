@@ -32,7 +32,7 @@ namespace SecretAdmin.Features.Server
                 
                 if (mem > ConfigManager.SecretAdminConfig.MaxDefaultMemory)
                 {
-                    Log.Raw($"LOW MEMORY. USING {mem}MB / {ConfigManager.SecretAdminConfig.MaxDefaultMemory}");
+                    Log.SpectreRaw($"LOW MEMORY. USING {mem}MB / {ConfigManager.SecretAdminConfig.MaxDefaultMemory}", "gold1");
                     await Task.Delay(2500);
                     
                     if (ConfigManager.SecretAdminConfig.RestartWithLowMemory)

@@ -51,14 +51,18 @@ namespace SecretAdmin.Features.Console
         {
             SConsole.ForegroundColor = ConsoleColor.White;
             WriteLine();
-            AnsiConsole.Write(new Rule("[lime]Press any key to continue.[/]"));
+            AnsiConsole.Write(new Rule("[darkslategray3]Press any key to continue.[/]"));
             SConsole.ReadKey();
         }
         
         // Alerts
         
         public static void Raw(object message, ConsoleColor color = ConsoleColor.White, bool showTimeStamp = true) => WriteLine(showTimeStamp ? $"[[{DateTime.Now:T}]] {message.ToString().EscapeMarkup()}" : message, color);
-        
+        public static void SpectreRaw(object message, string color = "white", bool showTimeStamp = false, string timestampColor = "white")
+        {
+            WriteLine(showTimeStamp ? $"[{timestampColor}][[{DateTime.Now:T}]][/] [{color}]{message.ToString().EscapeMarkup()}[/]" : $"[{color}]{message.ToString().EscapeMarkup()}[/]");
+        }
+
         private static void Info(string title, string message)
         {
             Write($"[[{DateTime.Now:T}]] ", ConsoleColor.Magenta);
@@ -142,7 +146,15 @@ namespace SecretAdmin.Features.Console
             }
             else
             {
-                Raw(message, (ConsoleColor)code);
+                switch (code)
+                {
+                    case 10:
+                        SpectreRaw(message, "springgreen3", true, "slateblue1");
+                        break;
+                    default:
+                        Raw(message, (ConsoleColor)code);
+                        break;
+                }
             }
         }
         
