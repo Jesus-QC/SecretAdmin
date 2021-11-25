@@ -19,10 +19,24 @@ namespace SecretAdmin
 
         static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.ProcessExit += OnExit;
-            Console.Title = $"SecretAdmin [v{Version}]";
-
             AnsiConsole.Record();
+            
+            AppDomain.CurrentDomain.ProcessExit += OnExit;
+            
+            try
+            {
+                Start(args);
+            }
+            catch (Exception e)
+            {
+                AnsiConsole.WriteException(e);
+                Environment.Exit(-1);
+            }
+        }
+
+        private static void Start(string[] args)
+        {
+            Console.Title = $"SecretAdmin [v{Version}]";
             
             var arguments = ArgumentsManager.GetArgs(args);
             

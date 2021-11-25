@@ -33,8 +33,8 @@ namespace SecretAdmin.Features.Console
         
         public static void Input(string message, string title = "SERVER")
         {
-            Write($"\n{title} >>> ", ConsoleColor.Yellow);
-            WriteLine(message.EscapeMarkup(), ConsoleColor.Magenta);
+            Write($"\n[mistyrose1]{title} >>> [/]");
+            WriteLine(message.EscapeMarkup());
         }
         
         public static void Alert(object message, bool showTimeStamp = true)
@@ -150,6 +150,12 @@ namespace SecretAdmin.Features.Console
                 {
                     case 10:
                         SpectreRaw(message, "springgreen3", true, "slateblue1");
+                        break;
+                    case 15:
+                        SpectreRaw(message, "mediumpurple4", true, "mediumpurple4");
+                        break;
+                    case 6:
+                        SpectreRaw(message, "dodgerblue1", true, "mediumpurple4");
                         break;
                     default:
                         Raw(message, (ConsoleColor)code);

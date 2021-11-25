@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using SecretAdmin.API.Events.EventArgs;
 using SecretAdmin.Features.Console;
@@ -22,6 +23,8 @@ namespace SecretAdmin.Features.Server
         private NetworkStream _stream;
         private SilentCrashHandler _crashHandler;
 
+        private readonly CancellationTokenSource _cancellationTokenSource = new ();
+
         public SocketServer(ScpServer server)
         {
             _server = server;
@@ -34,55 +37,71 @@ namespace SecretAdmin.Features.Server
             {
                 _client = _listener.EndAcceptTcpClient(asyncResult);
                 _stream = _client.GetStream();
+
                 Task.Run(ListenRequests);
+
             }, _listener);
 
             _crashHandler = new SilentCrashHandler(this);
             _crashHandler.Start();
         }
 
-        public async void ListenRequests()
+        private async void ListenRequests()
         {
             var codeBuffer = new byte[1];
             var lenghtBuffer = new byte[sizeof(int)];
             
-            while (true)
+            try
             {
-                var codeBytes = await _stream.ReadAsync(codeBuffer, 0, 1);
-                var codeType = codeBuffer[0];
-                var lengthBytes = await _stream.ReadAsync(lenghtBuffer, 0, sizeof(int));
-                var length = (lenghtBuffer[0] << 24) | (lenghtBuffer[1] << 16) | (lenghtBuffer[2] << 8) | lenghtBuffer[3];
-                
-                var messageBuffer = new byte[length];
-                var messageBytesRead = await _stream.ReadAsync(messageBuffer, 0, length);
+                while (true)
+                {
+                    var codeBytes = await _stream.ReadAsync(codeBuffer.AsMemory(0, 1), _cancellationTokenSource.Token);
+                    var codeType = codeBuffer[0];
+                    var lengthBytes = await _stream.ReadAsync(lenghtBuffer.AsMemory(0, sizeof(int)), _cancellationTokenSource.Token);
+                    var length = (lenghtBuffer[0] << 24) | (lenghtBuffer[1] << 16) | (lenghtBuffer[2] << 8) |
+                                 lenghtBuffer[3];
 
-                if (codeBytes <= 0 || lengthBytes != sizeof(int) || messageBytesRead <= 0)
-                {
-                    if(_server.Status == ServerStatus.Online)
-                        Log.Alert("Socket disconnected.");
-                    break;
-                }
+                    var messageBuffer = new byte[length];
+                    var messageBytesRead = await _stream.ReadAsync(messageBuffer.AsMemory(0, length), _cancellationTokenSource.Token);
 
-                if (codeType >= 16)
-                {
-                    HandleAction(codeType);
-                    continue;
-                }
-                
-                if (length <= 0)
-                    return;
-                
-                var message = Encoding.GetString(messageBuffer, 0, length);
-                if (HandleSecretAdminEvents(message))
-                {
+                    if (codeBytes <= 0 || lengthBytes != sizeof(int) || messageBytesRead <= 0)
+                    {
+                        if (_server.Status == ServerStatus.Online)
+                            Log.Alert("Socket disconnected.");
+                        break;
+                    }
+
+                    if (codeType >= 16)
+                    {
+                        HandleAction(codeType);
+                        continue;
+                    }
+
+                    if (length <= 0)
+                        return;
+
+                    var message = Encoding.GetString(messageBuffer, 0, length);
+
+                    if (!HandleSecretAdminEvents(message)) 
+                        continue;
+                    
                     _server.AddLog(message, $"[{DateTime.Now:T}]");
                     Log.HandleMessage(message, codeType);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Alert("Socket cancelled.");
+            }
+            finally
+            {
+                _cancellationTokenSource.Dispose();
             }
         }
         
         public void Dispose()
         {
+            _cancellationTokenSource.Cancel();
             _crashHandler?.Dispose();
             _client?.Close();
             _listener?.Stop();
