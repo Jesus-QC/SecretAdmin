@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
 using SecretAdmin.API;
+using Spectre.Console;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
-using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server;
 using SecretAdmin.Features.Server.Commands;
-using Spectre.Console;
+using ConfigManager = SecretAdmin.Features.Program.Config.ConfigManager;
 
 namespace SecretAdmin
 {
@@ -22,16 +22,9 @@ namespace SecretAdmin
             AnsiConsole.Record();
             
             AppDomain.CurrentDomain.ProcessExit += OnExit;
+            AppDomain.CurrentDomain.UnhandledException += OnError;
             
-            try
-            {
-                Start(args);
-            }
-            catch (Exception e)
-            {
-                AnsiConsole.WriteException(e);
-                Environment.Exit(-1);
-            }
+            Start(args);
         }
 
         private static void Start(string[] args)
@@ -54,7 +47,7 @@ namespace SecretAdmin
             Utils.ArchiveControlLogs();
 
             CommandHandler = new CommandHandler();
-            ModuleManager.LoadAll();
+            ModuleManager.LoadAll(ConfigManager.GetServerConfig(arguments.Config).Port);
             
             Server = new ScpServer(ConfigManager.GetServerConfig(arguments.Config));
             Server.Start();
@@ -62,6 +55,13 @@ namespace SecretAdmin
             InputManager.Start();
         }
 
+        private static void OnError(object obj, UnhandledExceptionEventArgs ev)
+        {
+            AnsiConsole.WriteException((Exception)ev.ExceptionObject);
+            File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-exception.log"), AnsiConsole.ExportText());
+            OnExit(obj, ev);
+        }
+        
         private static void OnExit(object obj, EventArgs ev)
         {
             Console.ForegroundColor = ConsoleColor.Blue;
@@ -71,7 +71,7 @@ namespace SecretAdmin
                 Server?.Kill();
 
             foreach (var module in ModuleManager.Modules)
-                module.OnDisabled();
+                module?.OnDisabled();
 
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Everything seems good to go! Bye :)");

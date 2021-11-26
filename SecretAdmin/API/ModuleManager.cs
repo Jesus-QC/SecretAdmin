@@ -6,15 +6,14 @@ using SecretAdmin.API.Features;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
 using Spectre.Console;
-using Module = SecretAdmin.API.Features.Module;
 
 namespace SecretAdmin.API
 {
     public static class ModuleManager
     {
-        public static List<IModule> Modules = new ();
+        public static List<IModule<IModuleConfig>> Modules = new ();
 
-        public static void LoadAll()
+        public static void LoadAll(uint port)
         {
             Log.WriteLine();
             Log.SpectreRaw("Loading module dependencies...", "lightpink1");
@@ -51,16 +50,22 @@ namespace SecretAdmin.API
                 {
                     foreach (var type in assembly.GetTypes())
                     {
-                        if(type.IsAbstract || type.IsInterface || type.BaseType != typeof(Module))
+                        if(type.IsAbstract || type.IsInterface || !type.BaseType!.IsGenericType || type.BaseType.GetGenericTypeDefinition() != typeof(Module<>))
                             continue;
 
                         var constructor = type.GetConstructor(Type.EmptyTypes);
                         if (constructor == null)
                             continue;
 
-                        var module = constructor.Invoke(null) as IModule;
-                        module?.OnEnabled();
-                        module?.OnRegisteringCommands();
+                        var module = constructor.Invoke(null) as IModule<IModuleConfig>;
+
+                        module.LoadConfig(port);
+                        
+                        if (module!.Config.IsEnabled)
+                        {
+                            module.OnEnabled();
+                            module.OnRegisteringCommands();
+                        }
 
                         Modules.Add(module);
                         count++;
