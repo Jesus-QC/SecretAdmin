@@ -30,4 +30,5 @@ jobs:
         path: | 
           SecretAdmin/bin/Debug/net5.0/SecretAdmin
           SecretAdmin/bin/Debug/net5.0/SecretAdmin.exe
+          SecretAdmin/bin/Debug/net5.0/SecretAdmin.dll
         if-no-files-found: error
