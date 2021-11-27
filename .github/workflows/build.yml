@@ -9,10 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, windows-latest ]
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -20,15 +17,17 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
+    - name: Build for Linux x64
+      run: dotnet publish -r linux-x64
+    - name: Build for Windows x64
+      run: dotnet publish -r win-x64
     - uses: actions/upload-artifact@v2
       with:
-        name: SecretAdmin ${{ matrix.os }}
-        path: | 
-          SecretAdmin/bin/Debug/net5.0/SecretAdmin
-          SecretAdmin/bin/Debug/net5.0/SecretAdmin.exe
-          SecretAdmin/bin/Debug/net5.0/SecretAdmin.dll
+        name: SecretAdmin Linux x64
+        path: SecretAdmin/bin/Release/net5.0/publish/SecretAdmin
+    - uses: actions/upload-artifact@v2
+      with:
+        name: SecretAdmin Windows x64
+        path: SecretAdmin/bin/Release/net5.0/publish/SecretAdmin.exe
+          
         if-no-files-found: error
