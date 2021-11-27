@@ -18,9 +18,9 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Build for Linux x64
-      run: dotnet publish -r linux-x64 -c Release
+      run: dotnet publish -r linux-x64 -c Release --self-contained true
     - name: Build for Windows x64
-      run: dotnet publish -r win-x64 -c Release
+      run: dotnet publish -r win-x64 -c Release --self-contained true
     - uses: actions/upload-artifact@v2
       with:
         name: SecretAdmin Linux x64
