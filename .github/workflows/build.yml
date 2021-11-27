@@ -24,10 +24,8 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: SecretAdmin Linux x64
-        path: SecretAdmin/bin/Release/net5.0/publish/SecretAdmin
+        path: SecretAdmin/bin/Release/net5.0/publish/linux-x64/SecretAdmin
     - uses: actions/upload-artifact@v2
       with:
         name: SecretAdmin Windows x64
-        path: SecretAdmin/bin/Release/net5.0/publish/SecretAdmin.exe
-          
-        if-no-files-found: error
+        path: SecretAdmin/bin/Release/net5.0/publish/win10-x64/SecretAdmin.exe
