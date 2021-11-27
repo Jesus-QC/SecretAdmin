@@ -28,6 +28,6 @@ jobs:
       with:
         name: SecretAdmin-${{ env.RUNNER_OS }}
         path: | 
-          SecretAdmin/bin/Release/SecretAdmin
-          SecretAdmin/bin/Release/SecretAdmin.exe
+          SecretAdmin/bin/Debug/SecretAdmin
+          SecretAdmin/bin/Debug/SecretAdmin.exe
         if-no-files-found: warn
