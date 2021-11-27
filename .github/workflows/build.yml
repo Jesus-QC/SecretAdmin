@@ -26,7 +26,7 @@ jobs:
       run: dotnet build --no-restore
     - uses: actions/upload-artifact@v2
       with:
-        name: SecretAdmin ${{ env.RUNNER_OS }}
+        name: SecretAdmin ${{ matrix.os }}
         path: | 
           SecretAdmin/bin/Debug/net5.0/SecretAdmin
           SecretAdmin/bin/Debug/net5.0/SecretAdmin.exe
