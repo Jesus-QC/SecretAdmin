@@ -58,9 +58,7 @@ namespace SecretAdmin.Features.Server
                     var codeBytes = await _stream.ReadAsync(codeBuffer.AsMemory(0, 1), _cancellationTokenSource.Token);
                     var codeType = codeBuffer[0];
                     var lengthBytes = await _stream.ReadAsync(lenghtBuffer.AsMemory(0, sizeof(int)), _cancellationTokenSource.Token);
-                    var length = (lenghtBuffer[0] << 24) | (lenghtBuffer[1] << 16) | (lenghtBuffer[2] << 8) |
-                                 lenghtBuffer[3];
-
+                    var length = (lenghtBuffer[0] << 24) | (lenghtBuffer[1] << 16) | (lenghtBuffer[2] << 8) | lenghtBuffer[3];
                     var messageBuffer = new byte[length];
                     var messageBytesRead = await _stream.ReadAsync(messageBuffer.AsMemory(0, length), _cancellationTokenSource.Token);
 
@@ -101,7 +99,6 @@ namespace SecretAdmin.Features.Server
         
         public void Dispose()
         {
-            _cancellationTokenSource.Cancel();
             _crashHandler?.Dispose();
             _client?.Close();
             _listener?.Stop();

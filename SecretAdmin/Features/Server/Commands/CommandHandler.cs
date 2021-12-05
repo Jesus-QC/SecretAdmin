@@ -14,6 +14,20 @@ namespace SecretAdmin.Features.Server.Commands
     {
         private readonly Dictionary<string, MethodInfo> _commands = new();
 
+        [ConsoleCommand("StdErr")]
+        private void StdErr()
+        {
+            SecretAdmin.Program.Server.LogStdErr = !SecretAdmin.Program.Server.LogStdErr;
+            Log.Raw($"Log StdErr: {SecretAdmin.Program.Server.LogStdErr}", ConsoleColor.DarkCyan);
+        }
+        
+        [ConsoleCommand("StdOut")]
+        private void StdOut()
+        {
+            SecretAdmin.Program.Server.LogStdOut = !SecretAdmin.Program.Server.LogStdOut;
+            Log.Raw($"Log StdOut: {SecretAdmin.Program.Server.LogStdOut}", ConsoleColor.DarkCyan);
+        }
+        
         [ConsoleCommand("Ram")]
         private void ShowRamUsage()
         {
@@ -38,7 +52,14 @@ namespace SecretAdmin.Features.Server.Commands
             SecretAdmin.Program.Server.Status = ServerStatus.Exiting;
             SecretAdmin.Program.Server.Socket.SendMessage("exit");
         }
-
+        
+        [ConsoleCommand("SR")]
+        private void SoftRestartCommand()
+        {
+            Log.SpectreRaw("Restarting the server...", "lightslateblue");
+            SecretAdmin.Program.Server.Socket.SendMessage("sr");
+        }
+        
         [ConsoleCommand("Files")]
         private void FilesCommand()
         {

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server.Enums;
+using Spectre.Console;
 using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
 namespace SecretAdmin.Features.Server
@@ -14,6 +15,8 @@ namespace SecretAdmin.Features.Server
         public SocketServer Socket { get; private set; }
         public ServerConfig Config { get; }
 
+        public bool LogStdOut = false;
+        public bool LogStdErr = false;
         public ServerStatus Status;
         public DateTime StartedTime; //TODO: .
         public int Rounds; //TODO: .
@@ -50,8 +53,8 @@ namespace SecretAdmin.Features.Server
             _serverProcess = Process.Start(startInfo);
             _serverProcess!.Exited += OnExited;
             _serverProcess.EnableRaisingEvents = true;
-            _serverProcess.ErrorDataReceived += (_, args)  => AddOutputLog(args.Data, "[STDERR]");
-            _serverProcess.OutputDataReceived += (_, args) => AddOutputLog(args.Data, "[STDOUT]");
+            _serverProcess.ErrorDataReceived += (_, args)  => StdErr(args);
+            _serverProcess.OutputDataReceived += (_, args) => StdOut(args);
             _serverProcess.BeginErrorReadLine();
             _serverProcess.BeginOutputReadLine();
 
@@ -135,6 +138,22 @@ namespace SecretAdmin.Features.Server
                 return;
             
             _outputLogger.AppendLog(title == null ? message : $"{title} {message}", true);
+        }
+
+        private void StdOut(DataReceivedEventArgs ev)
+        {
+            if(LogStdOut)
+                Log.SpectreRaw("[[STDOUT]]" + ev.Data.EscapeMarkup(), "paleturquoise4");
+            
+            AddOutputLog(ev.Data, "[STDOUT]");
+        }
+        
+        private void StdErr(DataReceivedEventArgs ev)
+        {
+            if(LogStdErr)
+                Log.SpectreRaw("[[STDERR]]" + ev.Data.EscapeMarkup(), "indianred");
+            
+            AddOutputLog(ev.Data, "[STDERR]");
         }
     }
 }

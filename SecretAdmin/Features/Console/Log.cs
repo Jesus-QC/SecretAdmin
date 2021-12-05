@@ -58,10 +58,7 @@ namespace SecretAdmin.Features.Console
         // Alerts
         
         public static void Raw(object message, ConsoleColor color = ConsoleColor.White, bool showTimeStamp = true) => WriteLine(showTimeStamp ? $"[[{DateTime.Now:T}]] {message.ToString().EscapeMarkup()}" : message, color);
-        public static void SpectreRaw(object message, string color = "white", bool showTimeStamp = false, string timestampColor = "white")
-        {
-            WriteLine(showTimeStamp ? $"[{timestampColor}][[{DateTime.Now:T}]][/] [{color}]{message.ToString().EscapeMarkup()}[/]" : $"[{color}]{message.ToString().EscapeMarkup()}[/]");
-        }
+        public static void SpectreRaw(object message, string color = "white", bool showTimeStamp = false, string timestampColor = "white") => WriteLine(showTimeStamp ? $"[{timestampColor}][[{DateTime.Now:T}]][/] [{color}]{message}[/]" : $"[{color}]{message}[/]");
 
         private static void Info(string title, string message)
         {
@@ -149,13 +146,13 @@ namespace SecretAdmin.Features.Console
                 switch (code)
                 {
                     case 10:
-                        SpectreRaw(message, "springgreen3", true, "slateblue1");
+                        SpectreRaw(message.EscapeMarkup(), "springgreen3", true, "slateblue1");
                         break;
                     case 15:
-                        SpectreRaw(message, "mediumpurple4", true, "mediumpurple4");
+                        SpectreRaw(message.EscapeMarkup(), "mediumpurple4", true, "mediumpurple4");
                         break;
                     case 6:
-                        SpectreRaw(message, "dodgerblue1", true, "mediumpurple4");
+                        SpectreRaw(message.EscapeMarkup(), "dodgerblue1", true, "mediumpurple4");
                         break;
                     default:
                         Raw(message, (ConsoleColor)code);
