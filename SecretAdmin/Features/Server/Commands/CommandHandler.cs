@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server.Enums;
@@ -13,6 +15,13 @@ namespace SecretAdmin.Features.Server.Commands
     public class CommandHandler
     {
         private readonly Dictionary<string, MethodInfo> _commands = new();
+
+        [ConsoleCommand("ExiledFolder")]
+        private void ExiledFolder()
+        {
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EXILED"));
+        }
 
         [ConsoleCommand("StdErr")]
         private void StdErr()
