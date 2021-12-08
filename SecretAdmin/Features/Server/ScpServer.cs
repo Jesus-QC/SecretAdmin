@@ -104,6 +104,7 @@ namespace SecretAdmin.Features.Server
         
         public void Kill()
         {
+            Status = ServerStatus.Exiting;
             MemoryManager?.Dispose();
             MemoryManager = null;
             Socket?.Dispose();

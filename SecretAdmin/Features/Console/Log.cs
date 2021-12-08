@@ -96,12 +96,14 @@ namespace SecretAdmin.Features.Console
         {
             SConsole.ForegroundColor = color;
             AnsiConsole.MarkupLine(message?.ToString() ?? "");
+            SConsole.ForegroundColor = ConsoleColor.White;
         }
         
         public static void Write(object message = null, ConsoleColor color = ConsoleColor.White)
         {
             SConsole.ForegroundColor = color;
             AnsiConsole.Markup(message?.ToString() ?? "");
+            SConsole.ForegroundColor = ConsoleColor.White;
         }
 
         public static T GetOption<T>(string msg, T def) => AnsiConsole.Ask($"[lightcyan3]{msg}[/]", def);
@@ -168,5 +170,6 @@ namespace SecretAdmin.Features.Console
             SConsole.Write(new string(' ', SConsole.WindowWidth));
             SConsole.SetCursorPosition(0, SConsole.CursorTop - 1);
         }
+       
     }
 }

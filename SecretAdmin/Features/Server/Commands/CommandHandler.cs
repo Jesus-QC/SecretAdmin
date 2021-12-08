@@ -15,13 +15,38 @@ namespace SecretAdmin.Features.Server.Commands
     public class CommandHandler
     {
         private readonly Dictionary<string, MethodInfo> _commands = new();
-
-        [ConsoleCommand("ExiledFolder")]
-        private void ExiledFolder()
+        
+        [ConsoleCommand("Files")]
+        private void FilesCommand()
         {
+            var root = new Tree($"\n[white]{Paths.MainFolder}[/]");
+            var logs = root.AddNode("[yellow]Logs[/]");
+            root.AddNode("[yellow]Configs[/]");
+            root.AddNode("[yellow]Modules[/]");
+            root.AddNode("[blue]config.yml[/]");
+            logs.AddNode("[lime]SecretAdmin[/]");
+            logs.AddNode("[lime]Server[/]");
+
+            AnsiConsole.Write(root);
+            Log.WriteLine();
+            
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EXILED"));
+                Process.Start("explorer.exe", Paths.MainFolder);
         }
+        
+        [ConsoleCommand("sacreate")]
+        private void CreateServerFileCommand()
+        {
+            
+        }
+        
+        [ConsoleCommand("Ram")]
+        private void ShowRamUsage()
+        {
+            Log.Alert($"RAM USAGE: {SecretAdmin.Program.Server.MemoryManager.GetMemory()}MB");
+        }
+
+        #region Console
 
         [ConsoleCommand("StdErr")]
         private void StdErr()
@@ -36,19 +61,28 @@ namespace SecretAdmin.Features.Server.Commands
             SecretAdmin.Program.Server.LogStdOut = !SecretAdmin.Program.Server.LogStdOut;
             Log.Raw($"Log StdOut: {SecretAdmin.Program.Server.LogStdOut}", ConsoleColor.DarkCyan);
         }
+
+        #endregion
         
-        [ConsoleCommand("Ram")]
-        private void ShowRamUsage()
+        #region Exiled
+
+        [ConsoleCommand("ExiledFolder")]
+        private void ExiledFolder()
         {
-            Log.Alert($"RAM USAGE: {SecretAdmin.Program.Server.MemoryManager.GetMemory()}MB"); // TODO: calculate this
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Process.Start("explorer.exe", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EXILED"));
         }
-        
+
         [ConsoleCommand("exiled")]
         private void ExiledInstall()
         {
             ExiledInstaller.InstallExiled();
         }
-        
+
+        #endregion
+
+        #region BaseCommandEnhances
+
         [ConsoleCommand("Quit")]
         private void QuitCommand()
         {
@@ -68,28 +102,11 @@ namespace SecretAdmin.Features.Server.Commands
             Log.SpectreRaw("Restarting the server...", "lightslateblue");
             SecretAdmin.Program.Server.Socket.SendMessage("sr");
         }
-        
-        [ConsoleCommand("Files")]
-        private void FilesCommand()
-        {
-            var root = new Tree($"\n[white]{Paths.MainFolder}[/]");
-            var logs = root.AddNode("[yellow]Logs[/]");
-            root.AddNode("[yellow]Configs[/]");
-            root.AddNode("[yellow]Modules[/]");
-            root.AddNode("[blue]config.yml[/]");
-            logs.AddNode("[lime]SecretAdmin[/]");
-            logs.AddNode("[lime]Server[/]");
 
-            AnsiConsole.Write(root);
-            Log.WriteLine();
-        }
-        
-        [ConsoleCommand("sacreate")]
-        private void CreateServerFileCommand()
-        {
-            
-        }
-        
+        #endregion
+
+        #region Manager
+
         public CommandHandler()
         {
             var ti = typeof(CommandHandler).GetTypeInfo();
@@ -143,5 +160,7 @@ namespace SecretAdmin.Features.Server.Commands
             _commands[name].Invoke(this, new object[]{});
             return true;
         }
+
+        #endregion
     }
 }

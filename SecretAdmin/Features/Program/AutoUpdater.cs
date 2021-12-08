@@ -7,7 +7,7 @@ namespace SecretAdmin.Features.Program
     {
         public static void CheckForUpdates()
         {
-            //TODO
+            // TODO: ^^
             /*var client = new WebClient();
             var data = client.DownloadString("https://api.github.com/repos/Jesus-QC/SecretAdmin/releases/latest");
             */

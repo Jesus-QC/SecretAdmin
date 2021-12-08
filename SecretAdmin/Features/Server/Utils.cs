@@ -37,6 +37,10 @@ namespace SecretAdmin.Features.Server
         public static void ArchiveServerLogs()
         {
             var filesToArchive = (from fileName in Directory.GetFiles(Paths.ServerLogsFolder, "*.log") let reg = new Regex(@"\[(.*?)\]") let match = reg.Match(fileName) where match.Success && match.Groups[1].Value.Length > 15 && DateTime.TryParseExact(match.Groups[1].Value[..16], "MM-dd-yyyy HH.mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) && d <= DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays) select fileName).ToList();
+            
+            if(filesToArchive.Count < 1)
+                return;
+            
             var zipName = Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Today.AddDays(-1):MM-dd-yyyy}-archive.zip");
 
             if(!File.Exists(zipName))
@@ -54,11 +58,15 @@ namespace SecretAdmin.Features.Server
         public static void ArchiveControlLogs()
         {
             var filesToArchive = new List<string>();
+            
             foreach (var fileName in Directory.GetFiles(Paths.ProgramLogsFolder, "*.log"))
             {
-                if (DateTime.TryParseExact(Path.GetFileName(fileName).Replace(".log", ""), "MM.dd.yyyy-hh.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) && d <= DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays)) 
+                if (DateTime.TryParseExact(Path.GetFileName(fileName).Replace("-exception", "").Replace(".log", ""), "MM.dd.yyyy-hh.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) && d.Ticks < DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays).Ticks) 
                     filesToArchive.Add(fileName);
             }
+            
+            if(filesToArchive.Count < 1)
+                return;
 
             var zipName = Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM-dd-yyyy}-archive.zip");
 

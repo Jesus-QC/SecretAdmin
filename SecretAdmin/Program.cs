@@ -19,6 +19,8 @@ namespace SecretAdmin
 
         static void Main(string[] args)
         {
+            Console.Title = $"SecretAdmin [v{Version}]";
+            
             AnsiConsole.Record();
             
             AppDomain.CurrentDomain.ProcessExit += OnExit;
@@ -29,8 +31,6 @@ namespace SecretAdmin
 
         private static void Start(string[] args)
         {
-            Console.Title = $"SecretAdmin [v{Version}]";
-            
             var arguments = ArgumentsManager.GetArgs(args);
             
             Paths.Load();
@@ -59,10 +59,12 @@ namespace SecretAdmin
         {
             AnsiConsole.WriteException((Exception)ev.ExceptionObject);
             File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-exception.log"), AnsiConsole.ExportText());
-            OnExit(obj, ev);
+            Exit(false);
         }
         
-        private static void OnExit(object obj, EventArgs ev)
+        private static void OnExit(object obj, EventArgs ev) => Exit();
+        
+        private static void Exit(bool saveLogs = true)
         {
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\nExit Detected. Killing game process.");
@@ -75,7 +77,9 @@ namespace SecretAdmin
 
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Everything seems good to go! Bye :)");
-            File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"), AnsiConsole.ExportText());
+
+            if(saveLogs)
+                File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"), AnsiConsole.ExportText());
         }
     }
 }
