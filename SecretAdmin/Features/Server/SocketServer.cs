@@ -87,7 +87,7 @@ namespace SecretAdmin.Features.Server
                     Log.HandleMessage(message, codeType);
                 }
             }
-            catch (OperationCanceledException)
+            catch (Exception)
             {
                 Log.Alert("Socket cancelled.");
             }
