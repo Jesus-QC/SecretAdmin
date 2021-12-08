@@ -12,7 +12,7 @@ namespace SecretAdmin
 {
     class Program
     {
-        public static Version Version { get; } = new (0, 0, 0,1);
+        public static Version Version { get; } = new (0, 0, 0,2);
         public static ScpServer Server { get; private set; }
         public static ConfigManager ConfigManager { get; private set; }
         public static CommandHandler CommandHandler { get; private set; }
