@@ -1,29 +1,36 @@
 ﻿using System;
 using System.IO;
 using SecretAdmin.API;
+using Spectre.Console;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
-using SecretAdmin.Features.Program.Config;
 using SecretAdmin.Features.Server;
 using SecretAdmin.Features.Server.Commands;
-using Spectre.Console;
+using ConfigManager = SecretAdmin.Features.Program.Config.ConfigManager;
 
 namespace SecretAdmin
 {
     class Program
     {
-        public static Version Version { get; } = new (0, 0, 0,1);
+        public static Version Version { get; } = new (0, 0, 0,2);
         public static ScpServer Server { get; private set; }
         public static ConfigManager ConfigManager { get; private set; }
         public static CommandHandler CommandHandler { get; private set; }
 
         static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.ProcessExit += OnExit;
             Console.Title = $"SecretAdmin [v{Version}]";
-
+            
             AnsiConsole.Record();
             
+            AppDomain.CurrentDomain.ProcessExit += OnExit;
+            AppDomain.CurrentDomain.UnhandledException += OnError;
+            
+            Start(args);
+        }
+
+        private static void Start(string[] args)
+        {
             var arguments = ArgumentsManager.GetArgs(args);
             
             Paths.Load();
@@ -40,7 +47,7 @@ namespace SecretAdmin
             Utils.ArchiveControlLogs();
 
             CommandHandler = new CommandHandler();
-            ModuleManager.LoadAll();
+            ModuleManager.LoadAll(ConfigManager.GetServerConfig(arguments.Config).Port);
             
             Server = new ScpServer(ConfigManager.GetServerConfig(arguments.Config));
             Server.Start();
@@ -48,7 +55,16 @@ namespace SecretAdmin
             InputManager.Start();
         }
 
-        private static void OnExit(object obj, EventArgs ev)
+        private static void OnError(object obj, UnhandledExceptionEventArgs ev)
+        {
+            AnsiConsole.WriteException((Exception)ev.ExceptionObject);
+            File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-exception.log"), AnsiConsole.ExportText());
+            Exit(false);
+        }
+        
+        private static void OnExit(object obj, EventArgs ev) => Exit();
+        
+        private static void Exit(bool saveLogs = true)
         {
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\nExit Detected. Killing game process.");
@@ -57,11 +73,13 @@ namespace SecretAdmin
                 Server?.Kill();
 
             foreach (var module in ModuleManager.Modules)
-                module.OnDisabled();
+                module?.OnDisabled();
 
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Everything seems good to go! Bye :)");
-            File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"), AnsiConsole.ExportText());
+
+            if(saveLogs)
+                File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"), AnsiConsole.ExportText());
         }
     }
 }

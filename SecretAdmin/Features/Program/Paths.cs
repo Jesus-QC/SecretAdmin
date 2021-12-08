@@ -12,6 +12,7 @@ namespace SecretAdmin.Features.Program
         public static string ServerConfigsFolder { get; private set; }
         public static string ProgramConfig { get; private set; }
         public static string ModulesFolder { get; private set; }
+        public static string ModulesConfigFolder { get; private set; }
         public static string ModulesDependenciesFolder { get; private set; }
 
         public static void Load()
@@ -23,6 +24,7 @@ namespace SecretAdmin.Features.Program
             ServerConfigsFolder = Path.Combine(MainFolder, "Configs");
             ProgramConfig = Path.Combine(MainFolder, "config.yml");
             ModulesFolder = Path.Combine(MainFolder, "Modules");
+            ModulesConfigFolder = Path.Combine(ModulesFolder, "Configs");
             ModulesDependenciesFolder = Path.Combine(ModulesFolder, "Dependencies");
             CreateIfNotExists();
         }

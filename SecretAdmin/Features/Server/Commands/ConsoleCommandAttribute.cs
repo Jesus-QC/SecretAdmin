@@ -2,6 +2,7 @@
 
 namespace SecretAdmin.Features.Server.Commands
 {
+    [AttributeUsage(AttributeTargets.Method)]
     public class ConsoleCommandAttribute : Attribute
     {
         public string Name { get; }
