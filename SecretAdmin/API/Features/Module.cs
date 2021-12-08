@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using SecretAdmin.Features.Console;
+using Spectre.Console;
 
 namespace SecretAdmin.API.Features
 {
@@ -23,12 +24,12 @@ namespace SecretAdmin.API.Features
 
         public virtual void OnEnabled()
         {
-            Log.SpectreRaw($"The module {Name} [{Version}] by {Author} has been enabled.", "lightcyan1");
+            Log.SpectreRaw($"The module {Name} [{Version}] by {Author} has been enabled.".EscapeMarkup(), "lightcyan1");
         }
 
         public virtual void OnDisabled()
         {
-            Log.SpectreRaw($"The module {Name} [{Version}] by {Author} has been disabled.", "lightcyan1");
+            Log.SpectreRaw($"The module {Name} [{Version}] by {Author} has been disabled.".EscapeMarkup(), "lightcyan1");
         }
 
         public virtual void OnRegisteringCommands()

@@ -27,11 +27,11 @@ namespace SecretAdmin.API
                 {
                     var assembly = Assembly.UnsafeLoadFrom(file);
                     count++;
-                    Log.SpectreRaw($"Dependency {assembly.GetName().Name} ({assembly.GetName().Version}) has been loaded!", "lightcyan1");
+                    Log.SpectreRaw($"Dependency {assembly.GetName().Name} ({assembly.GetName().Version}) has been loaded!".EscapeMarkup(), "lightcyan1");
                 }
                 catch (Exception e)
                 {
-                    Log.SpectreRaw($"Couldn't load the dependency in the path {file}", "deeppink2");
+                    Log.SpectreRaw($"Couldn't load the dependency in the path {file}".EscapeMarkup(), "deeppink2");
                     AnsiConsole.WriteException(e);
                 }
             }
@@ -73,7 +73,7 @@ namespace SecretAdmin.API
                 }
                 catch (Exception e)
                 {
-                    Log.SpectreRaw($"Couldn't load the module in the path {file}", "deeppink2");
+                    Log.SpectreRaw($"Couldn't load the module in the path {file}".EscapeMarkup(), "deeppink2");
                     AnsiConsole.WriteException(e);
                 }
             }
