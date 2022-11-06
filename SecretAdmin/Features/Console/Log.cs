@@ -137,7 +137,7 @@ public static class Log
 
     public static bool GetConfirm(string msg, bool def)
     {
-        AnsiConsole.MarkupLine($"[lightcyan3]{msg}[/] [dodgerblue1](y/n)[/] [springgreen3]({(def ? "True" : "False")})[/]:");
+        AnsiConsole.MarkupLine($"[lightcyan3]{msg}[/] [dodgerblue1](y/n)[/] [springgreen3]({(def ? "Yes" : "No")})[/]:");
         
         while (true)
         {
@@ -149,7 +149,7 @@ public static class Log
             if (input is "exit")
                 Environment.Exit(-1);
 
-            switch (input.Trim())
+            switch (input.Trim().ToLower())
             {
                 case "yes" or "y":
                     return true;
