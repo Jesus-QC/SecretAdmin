@@ -1,10 +1,10 @@
-﻿namespace SecretAdmin.Features.Server.Enums
+﻿namespace SecretAdmin.Features.Server.Enums;
+
+public enum ServerStatus
 {
-    public enum ServerStatus
-    {
-        Online,
-        Exiting,
-        Restarting,
-        Idling
-    }
+    Online,
+    Exiting,
+    Restarting,
+    RestartingNextRound,
+    Idling
 }

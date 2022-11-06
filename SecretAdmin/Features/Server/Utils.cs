@@ -3,83 +3,101 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
-using static SecretAdmin.Program;
 
-namespace SecretAdmin.Features.Server
+namespace SecretAdmin.Features.Server;
+
+public static class Utils
 {
-    public static class Utils
+    public static bool TryGetExecutable(out string executable)
     {
-        public static bool GetExecutable(out string executable)
-        {
-            executable = "SCPSL.x86_64";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                executable = @"SCPSL.exe";
+        executable = "SCPSL.x86_64";
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            executable = "SCPSL.exe";
 
 #if DEBUG
-            executable = @"C:\Program Files (x86)\Steam\steamapps\common\SCP Secret Laboratory Dedicated Server\SCPSL.exe";
+        executable = @"C:\Program Files (x86)\Steam\steamapps\common\SCP Secret Laboratory Dedicated Server\SCPSL.exe";
 #endif
 
-            if (File.Exists(executable)) 
-                return true;
+        if (File.Exists(executable)) 
+            return true;
             
-            Log.Alert("\nExecutable not found, make sure this file is on the same folder as LocalAdmin.");
-            return false;
-        }
+        Log.Alert("\nExecutable not found, make sure this file is on the same folder as LocalAdmin.");
+        return false;
+    }
 
-        public static string GetLogsName(uint port) => Path.Combine(Paths.ServerLogsFolder, $"[{DateTime.Now:MM-dd-yyyy HH.mm}]-{port}.log");
-        public static string GetOutputLogsName(uint port) => Path.Combine(Paths.ServerLogsFolder, $"[{DateTime.Now:MM-dd-yyyy HH.mm}]-{port}-output.log");
-
-        public static void ArchiveServerLogs()
+    private static void Archive(HashSet<FileInfo> paths, string zip)
+    {
+        using FileStream zipFile = File.Open(zip, FileMode.Create);
+        using ZipArchive archive = new(zipFile, ZipArchiveMode.Create);
+        
+        foreach (FileInfo fileInfo in paths)
         {
-            var filesToArchive = (from fileName in Directory.GetFiles(Paths.ServerLogsFolder, "*.log") let reg = new Regex(@"\[(.*?)\]") let match = reg.Match(fileName) where match.Success && match.Groups[1].Value.Length > 15 && DateTime.TryParseExact(match.Groups[1].Value[..16], "MM-dd-yyyy HH.mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) && d <= DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays) select fileName).ToList();
-            
-            if(filesToArchive.Count < 1)
-                return;
-            
-            var zipName = Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Today.AddDays(-1):MM-dd-yyyy}-archive.zip");
+            archive.CreateEntryFromFile(fileInfo.FullName, fileInfo.Name);
+            fileInfo.Delete();
+        }
+    }
+    
+    public static void ArchiveOldLogs(int days)
+    {
+        DateTime now = DateTime.Today.AddDays(-days);
+        HashSet<FileInfo> toArchive = new();
 
-            if(!File.Exists(zipName))
-                File.WriteAllText(zipName, "");
-            
-            using var archive = ZipFile.Open(zipName, ZipArchiveMode.Update);
+        foreach (string outputLog in Directory.GetFiles(Paths.ProgramLogsFolder, "*.log"))
+        {
+            FileInfo file = new (outputLog);
 
-            foreach (var file in filesToArchive)
-            {
-                archive.CreateEntryFromFile(file, new FileInfo(file).Name);
-                File.Delete(file);
-            }
+            if (!DateTime.TryParseExact(file.Name[..19], "MM.dd.yyyy-hh.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime d) || d > now) 
+                continue;
+
+            toArchive.Add(file);
         }
         
-        public static void ArchiveControlLogs()
+        if (toArchive.Count != 0)
+            Archive(toArchive, Path.Combine(Paths.ProgramLogsFolder, $"{now:MM.dd.yyyy-hh.mm.ss}.zip"));
+        
+        toArchive.Clear();
+        
+        foreach (string outputLog in Directory.GetFiles(Paths.ServerLogsFolder, "*.log"))
         {
-            var filesToArchive = new List<string>();
-            
-            foreach (var fileName in Directory.GetFiles(Paths.ProgramLogsFolder, "*.log"))
-            {
-                if (DateTime.TryParseExact(Path.GetFileName(fileName).Replace("-exception", "").Replace(".log", ""), "MM.dd.yyyy-hh.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) && d.Ticks < DateTime.Today.AddDays(-ConfigManager.SecretAdminConfig.ArchiveLogsDays).Ticks) 
-                    filesToArchive.Add(fileName);
-            }
-            
-            if(filesToArchive.Count < 1)
-                return;
+            FileInfo file = new (outputLog);
 
-            var zipName = Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM-dd-yyyy}-archive.zip");
+            if (!DateTime.TryParseExact(file.Name[..19], "MM.dd.yyyy-hh.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime d) || d > now) 
+                continue;
 
-            if(!File.Exists(zipName))
-                File.WriteAllText(zipName, "");
-            
-            using var archive = ZipFile.Open(zipName, ZipArchiveMode.Update);
+            toArchive.Add(file);
+        }
+        
+        if(toArchive.Count == 0)
+            return;
+        
+        Archive(toArchive, Path.Combine(Paths.ProgramLogsFolder, $"{now:MM.dd.yyyy-hh.mm.ss}.zip"));
+    }
 
-            foreach (var file in filesToArchive)
-            {
-                archive.CreateEntryFromFile(file, new FileInfo(file).Name);
-                File.Delete(file);
-            }
+    public static void RemoveOldLogs(int days)
+    {
+        DateTime now = DateTime.Today.AddDays(-days);
+
+        foreach (string outputLog in Directory.GetFiles(Paths.ProgramLogsFolder))
+        {
+            FileInfo file = new (outputLog);
+
+            if (!DateTime.TryParseExact(file.Name[..19], "MM.dd.yyyy-hh.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime d) || d > now) 
+                continue;
+
+            File.Delete(outputLog);
+        }
+        
+        foreach (string outputLog in Directory.GetFiles(Paths.ServerLogsFolder))
+        {
+            FileInfo file = new (outputLog);
+
+            if (!DateTime.TryParseExact(file.Name[..19], "MM.dd.yyyy-hh.mm.ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime d) || d > now) 
+                continue;
+
+            File.Delete(outputLog);
         }
     }
 }

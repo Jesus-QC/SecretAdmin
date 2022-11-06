@@ -1,13 +1,12 @@
-﻿namespace SecretAdmin.Features.Program.Config
+﻿namespace SecretAdmin.Features.Program.Config;
+
+public class MainConfig
 {
-    public class MainConfig
-    {
-        public bool AutoUpdater { get; set; } = true;
-        public bool RestartOnCrash { get; set; } = true;
-        public int ArchiveLogsDays { get; set; } = 1;
-        public bool ManualStart { get; set; } = false;
-        public bool SafeShutdown { get; set; } = true;
-        public bool RestartWithLowMemory { get; set; } = true;
-        public int MaxDefaultMemory { get; set; } = 2048;
-    }
+    public bool AutoUpdater = true;
+    public bool RestartOnCrash = true;
+    public int ArchiveLogsDays = 1;
+    public int DeleteLogsDays = 2;
+    public bool SafeShutdown = true;
+    public bool RestartWithLowMemory = true;
+    public int MaxDefaultMemory = 2048;
 }

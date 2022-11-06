@@ -1,60 +1,45 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program.Config;
 using Spectre.Console;
 
-namespace SecretAdmin.Features.Program
+namespace SecretAdmin.Features.Program;
+
+public static class ProgramIntroduction
 {
-    public static class ProgramIntroduction
+    public static void ShowIntroduction()
     {
-        public static bool FirstTime => !File.Exists(Paths.ProgramConfig);
+        Log.WriteLine();
+        Log.Alert("Hi, welcome to SecretAdmin!");
+        Log.Alert("We have to configure some things before starting!\n");
         
-        public static void ShowIntroduction()
+        Rule rule = new Rule("[red]Configuration[/]")
         {
-            Log.Intro();
-            Log.WriteLine();
-            Log.Alert("Hi, welcome to SecretAdmin!");
-            Log.Alert("It seems like your first time using it, so we have to configure some things before!");
-            Log.WriteLine("Press any key to continue.", ConsoleColor.Green);
-            System.Console.ReadKey();
+            Alignment = Justify.Left
+        };
+        
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+        
+        // Program Options
+        
+        MainConfig cfg = new ()
+        {
+            AutoUpdater = Log.GetConfirm("Do you want to enable the auto updater?", true),
+            SafeShutdown = Log.GetConfirm("Do you want to safe shutdown the game processes?", true),
+            ArchiveLogsDays = Log.GetOption("In how many days the logs should be archived?", 1),
+            DeleteLogsDays = Log.GetOption("In how many days the logs should be deleted?", 2),
+            RestartOnCrash = Log.GetConfirm("Should the server automatically restart itself when it crashes?", true),
+            RestartWithLowMemory = Log.GetConfirm("Should the server restart itself when it has low memory?", true),
+            MaxDefaultMemory = Log.GetOption("Max memory the server can use, in MB.", 2048)
+        };
+        
+        SecretAdmin.Program.ConfigManager.SaveConfig(cfg);
             
-            // Program Options
+        Log.WriteLine();
+        Log.SpectreRaw("That were all the program configs! You can edit them always in:","skyblue2");
+        Log.Path(Paths.ProgramConfig);
 
-            var cfg = new MainConfig
-            {
-                AutoUpdater = Log.GetConfirm("Do you want to enable the auto updater?", true),
-                ManualStart = Log.GetConfirm("Do you want to manually have to enter a key to start the server?", false),
-                SafeShutdown = Log.GetConfirm("Do you want to safe shutdown the game processes?", true),
-                ArchiveLogsDays = Log.GetOption("In how many days the logs should be archived?", 1),
-                RestartOnCrash = Log.GetConfirm("Should the server automatically restart itself when it crashes?", true),
-                RestartWithLowMemory = Log.GetConfirm("Should the server restart itself when it has low memory?", true),
-                MaxDefaultMemory = Log.GetOption("Max memory the server can use, in MB.", 2048)
-            };
-
-            Paths.Load();
-            SecretAdmin.Program.ConfigManager.SaveConfig(cfg);
-            
-            Log.WriteLine();
-            Log.SpectreRaw($"That were all the program configs! You can edit them always in {Paths.ProgramConfig}.","skyblue2");
-            Log.Alert("Time to edit the default server configs.\n");
-
-            // Server Options
-
-            var srvConfig = new ServerConfig()
-            {
-                Port = Log.GetOption("Which should be the default server port?", (uint)7777),
-                RoundsToRestart = Log.GetOption("In how many rounds the server should restart itself. -1 disable, 0 every round", -1)
-            };
-            
-            Log.SpectreRaw($"That were your default server configs! You can edit them always in {Path.Combine(Paths.ServerConfigsFolder, "default.yml")}.","skyblue2");
-            SecretAdmin.Program.ConfigManager.SaveServerConfig(srvConfig);
-
-            // Start the server
-            
-            Log.Alert("Ok, thats all! Time to enjoy the server :)");
-            Log.ReadKey();
-            Directory.CreateDirectory(Paths.MainFolder);
-        }
+        Directory.CreateDirectory(Paths.MainFolder);
     }
 }

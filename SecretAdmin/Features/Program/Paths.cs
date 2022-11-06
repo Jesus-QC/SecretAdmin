@@ -1,43 +1,32 @@
 ﻿using System;
 using System.IO;
 
-namespace SecretAdmin.Features.Program
+namespace SecretAdmin.Features.Program;
+
+public static class Paths
 {
-    public static class Paths
+    public static string MainFolder;
+    public static string LogsFolder;
+    public static string ServerLogsFolder;
+    public static string ProgramLogsFolder;
+    public static string ProgramConfig;
+
+    public static void Load(int port)
     {
-        public static string MainFolder { get; private set; }
-        public static string LogsFolder { get; private set; }
-        public static string ServerLogsFolder { get; private set; }
-        public static string ProgramLogsFolder { get; private set; }
-        public static string ServerConfigsFolder { get; private set; }
-        public static string ProgramConfig { get; private set; }
-        public static string ModulesFolder { get; private set; }
-        public static string ModulesConfigFolder { get; private set; }
-        public static string ModulesDependenciesFolder { get; private set; }
-
-        public static void Load()
-        {
-            MainFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SecretAdmin");
-            LogsFolder = Path.Combine(MainFolder, "Logs");
-            ServerLogsFolder = Path.Combine(LogsFolder, "Server");
-            ProgramLogsFolder = Path.Combine(LogsFolder, "SecretAdmin");
-            ServerConfigsFolder = Path.Combine(MainFolder, "Configs");
-            ProgramConfig = Path.Combine(MainFolder, "config.yml");
-            ModulesFolder = Path.Combine(MainFolder, "Modules");
-            ModulesConfigFolder = Path.Combine(ModulesFolder, "Configs");
-            ModulesDependenciesFolder = Path.Combine(ModulesFolder, "Dependencies");
-            CreateIfNotExists();
-        }
-
-        public static void CreateIfNotExists()
-        {
-            Directory.CreateDirectory(MainFolder);
-            Directory.CreateDirectory(LogsFolder);
-            Directory.CreateDirectory(ServerLogsFolder);
-            Directory.CreateDirectory(ProgramLogsFolder);
-            Directory.CreateDirectory(ServerConfigsFolder);
-            Directory.CreateDirectory(ModulesFolder);
-            Directory.CreateDirectory(ModulesDependenciesFolder);
-        }
+        MainFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SecretAdmin", port.ToString());
+        LogsFolder = Path.Combine(MainFolder, "Logs");
+        ServerLogsFolder = Path.Combine(LogsFolder, "Server");
+        ProgramLogsFolder = Path.Combine(LogsFolder, "SecretAdmin");
+        ProgramConfig = Path.Combine(MainFolder, "config.yml");
+        
+        CreateIfNotExists();
+    }
+    
+    private static void CreateIfNotExists()
+    {
+        Directory.CreateDirectory(MainFolder);
+        Directory.CreateDirectory(LogsFolder);
+        Directory.CreateDirectory(ServerLogsFolder);
+        Directory.CreateDirectory(ProgramLogsFolder);
     }
 }

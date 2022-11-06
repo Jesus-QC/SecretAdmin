@@ -1,86 +1,152 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using SecretAdmin.Features.Console;
-using SecretAdmin.Features.Program.Config;
+using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server.Enums;
+using SecretAdmin.Features.Server.Modules;
 using Spectre.Console;
-using SEvents = SecretAdmin.API.Events.Handlers.Server;
 
-namespace SecretAdmin.Features.Server
+namespace SecretAdmin.Features.Server;
+
+public class ScpServer
 {
-    public class ScpServer
+    private Process _process;
+
+    private readonly int _port;
+    private readonly string[] _args;
+    
+    public ServerStatus Status;
+    public SocketServer SocketServer;
+
+    public MemoryManager MemoryManager;
+    //public SilentCrashHandler SilentCrashHandler;
+
+    private bool _logStdErr;
+    private bool _logStdOut;
+
+    private Logger _serverLogger;
+    private Logger _outputLogger;
+    
+    public ScpServer(int port = 7777, string[] args = null)
     {
-        public MemoryManager MemoryManager { get; private set; }
-        public SocketServer Socket { get; private set; }
-        public ServerConfig Config { get; }
-
-        public bool LogStdOut = false;
-        public bool LogStdErr = false;
-        public ServerStatus Status;
-        public DateTime StartedTime; //TODO: .
-        public int Rounds; //TODO: .
-        
-        private Process _serverProcess;
-        private Logger _logger;
-        private Logger _outputLogger;
-        
-        public ScpServer(ServerConfig config) => Config = config;
-
-        public void Start()
+        _port = port;
+        _args = args;
+    }
+    
+    public void Start()
+    {
+        if (!Utils.TryGetExecutable(out string executablePath))
         {
-            if (!Utils.GetExecutable(out var fileName))
-            {
-                System.Console.ReadKey();
-                Environment.Exit(-1);
-                return;
-            }
-            
-            Utils.ArchiveServerLogs();
-            _logger = new Logger(Utils.GetLogsName(Config.Port));
-            _outputLogger = new Logger(Utils.GetOutputLogsName(Config.Port));
-
-            _serverProcess?.Dispose();
-            Socket = new SocketServer(this);
-            
-            var gameArgs = new List<string> { "-batchmode", "-nographics", "-silent-crashes", "-nodedicateddelete", $"-id{Process.GetCurrentProcess().Id}", $"-console{Socket.Port}", $"-port{Config.Port}" };
-            var startInfo = new ProcessStartInfo(fileName, string.Join(' ', gameArgs)) { CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
-            
-            Log.WriteLine();
-            Log.Alert($"Starting server on port {Config.Port}.");
-            Log.WriteLine();
-
-            _serverProcess = Process.Start(startInfo);
-            _serverProcess!.Exited += OnExited;
-            _serverProcess.EnableRaisingEvents = true;
-            _serverProcess.ErrorDataReceived += (_, args)  => StdErr(args);
-            _serverProcess.OutputDataReceived += (_, args) => StdOut(args);
-            _serverProcess.BeginErrorReadLine();
-            _serverProcess.BeginOutputReadLine();
-
-            Status = ServerStatus.Online;
-            StartedTime = DateTime.Now;
-            Rounds = 0;
-
-            MemoryManager = new MemoryManager(_serverProcess);
-            MemoryManager.Start();
+            Log.ReadKey();
+            Environment.Exit(-1);
+            return;
         }
 
-        private void OnExited(object o, EventArgs e)
+        _process?.Dispose();
+        SocketServer = new SocketServer();
+
+        _serverLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-server.log"));
+        _outputLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-output.log"));
+
+        string[] gameArgs = 
         {
-            switch (Status)
+            "-batchmode",
+            "-nographics", 
+            "-silent-crashes", 
+            "-nodedicateddelete", 
+            $"-id{Environment.ProcessId}", 
+            $"-console{SocketServer.Port}", 
+            $"-port{_port}",
+        };
+
+        ProcessStartInfo startInfo = new(executablePath, string.Join(' ', gameArgs) + ' ' + string.Join(' ', _args ?? Array.Empty<string>()))
+        {
+            CreateNoWindow = true,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        
+        Log.Alert($"Starting server on port: {_port}.\n");
+        
+        _process = Process.Start(startInfo);
+
+        if (_process is null)
+        {
+            Log.Alert("An error occurred when starting the server process.");
+            Log.ReadKey();
+            Environment.Exit(-1);
+        }
+
+        _process.EnableRaisingEvents = true;
+        
+        _process.Exited += OnExited;
+        _process.OutputDataReceived += StdOut;
+        _process.ErrorDataReceived += StdErr;
+        _process.BeginOutputReadLine();
+        _process.BeginErrorReadLine();
+
+        Status = ServerStatus.Online;
+
+        MemoryManager = new MemoryManager(_process);
+        MemoryManager.Start();
+
+        // QuickEdit Mode in windows make false crash positives. 👀
+        // Until that, feature disabled.
+        // SilentCrashHandler = new SilentCrashHandler(SocketServer);
+        // SilentCrashHandler.Start();
+    }
+
+    public void Stop()
+    {
+        Status = ServerStatus.Exiting;
+
+        if (MemoryManager is not null)
+        {
+            MemoryManager.Killed = true;
+            MemoryManager = null;
+        }
+        
+        // SilentCrashHandler.Killed = true;
+        // SilentCrashHandler = null;
+
+        if (SocketServer is not null)
+        {
+            SocketServer.Stop();
+            SocketServer = null;
+        }
+        
+        _process.Kill();
+    }
+
+    public void Restart()
+    {
+        System.Console.Clear();
+        Stop();
+        Start();
+    }
+
+    private void OnExited(object o, EventArgs e)
+    {
+        switch (Status)
+        {
+            case ServerStatus.RestartingNextRound:
+            case ServerStatus.Restarting:
             {
-                case ServerStatus.Restarting:
-                    Restart();
-                    return;
-                
-                case ServerStatus.Exiting:
-                    Kill();
-                    Environment.Exit(0);
-                    return;
-                
-                case ServerStatus.Online:
-                    Log.Raw(@"
+                Restart();
+                break;
+            }
+            case ServerStatus.Exiting:
+            {
+                Stop();
+                Environment.Exit(0);
+                break;
+            }
+            case ServerStatus.Idling:
+            case ServerStatus.Online:
+            {
+                Log.Raw(@"
    █████████                              █████      ███
   ███░░░░░███                            ░░███      ░███
  ███     ░░░  ████████   ██████    █████  ░███████  ░███
@@ -89,72 +155,51 @@ namespace SecretAdmin.Features.Server
 ░░███     ███ ░███      ███░░███  ░░░░███ ░███ ░███ ░░░ 
  ░░█████████  █████    ░░████████ ██████  ████ █████ ███
   ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ",
-                        ConsoleColor.DarkYellow, false);
-
-                    if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
-                        Restart();
-                    else
-                        Log.Raw("Server crashed, press any key to close SecretAdmin."); System.Console.ReadKey();
-                    return;
+                    ConsoleColor.DarkYellow, false);
                 
-                default:
-                    throw new ArgumentOutOfRangeException();
+                if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+                    Restart();
+                else
+                    Log.ReadKey();
+                break;
             }
         }
+    }
+
+    public void ToggleStdOut() => _logStdOut = !_logStdOut;
+
+    public void ToggleStdErr() => _logStdErr = !_logStdErr;
+    
+
+    private void StdOut(object _, DataReceivedEventArgs ev)
+    {
+        if(_logStdOut)
+            Log.SpectreRaw("[[STDOUT]]" + ev.Data.EscapeMarkup(), "paleturquoise4");
         
-        public void Kill()
-        {
-            Status = ServerStatus.Exiting;
-            MemoryManager?.Dispose();
-            MemoryManager = null;
-            Socket?.Dispose();
-            Socket = null;
-            _serverProcess?.Kill();
-        }
+        AddOutputLog(ev.Data, "STDOUT");
+    }
 
-        public void Restart()
-        {
-            SEvents.OnRestarted();
-            Kill();
-            Start();
-        }
-
-        public void ForceRestart()
-        {
-            Status = ServerStatus.Restarting;
-            Restart();
-        }
-
-        public void AddLog(string message, string title = null)
-        {
-            if(string.IsNullOrEmpty(message))
-                return;
-            
-            _logger.AppendLog(title == null ? message : $"{title} {message}", true);
-        }
+    private void StdErr(object _, DataReceivedEventArgs ev)
+    {
+        if(_logStdErr)
+            Log.SpectreRaw("[[STDERR]]" + ev.Data.EscapeMarkup(), "indianred");
         
-        public void AddOutputLog(string message, string title = null)
-        {
-            if(string.IsNullOrEmpty(message))
-                return;
-            
-            _outputLogger.AppendLog(title == null ? message : $"{title} {message}", true);
-        }
+        AddOutputLog(ev.Data, "STDERR");
+    }
 
-        private void StdOut(DataReceivedEventArgs ev)
-        {
-            if(LogStdOut)
-                Log.SpectreRaw("[[STDOUT]]" + ev.Data.EscapeMarkup(), "paleturquoise4");
-            
-            AddOutputLog(ev.Data, "[STDOUT]");
-        }
-        
-        private void StdErr(DataReceivedEventArgs ev)
-        {
-            if(LogStdErr)
-                Log.SpectreRaw("[[STDERR]]" + ev.Data.EscapeMarkup(), "indianred");
-            
-            AddOutputLog(ev.Data, "[STDERR]");
-        }
+    public void AddLog(string message, string title = "")
+    {
+        if(string.IsNullOrEmpty(message))
+            return;
+
+        _serverLogger.AppendLog(string.IsNullOrWhiteSpace(title) ? message : $"[{title}] {message}");
+    }
+
+    private void AddOutputLog(string message, string title = "")
+    {
+        if(string.IsNullOrEmpty(message))
+            return;
+
+        _outputLogger.AppendLog(string.IsNullOrWhiteSpace(title) ? message : $"[{title}] {message}");
     }
 }
