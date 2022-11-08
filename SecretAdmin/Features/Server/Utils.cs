@@ -25,6 +25,7 @@ public static class Utils
             return true;
             
         Log.Alert("\nExecutable not found, make sure this file is on the same folder as LocalAdmin.");
+        Log.ReadKey();
         return false;
     }
 

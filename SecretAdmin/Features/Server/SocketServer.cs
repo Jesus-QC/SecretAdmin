@@ -132,7 +132,7 @@ public class SocketServer
                 break;
 
             case OutputCodes.IdleEnter:
-                SecretAdmin.Program.Server.Status = ServerStatus.Idling;
+                SecretAdmin.Program.Server.Status = ServerStatus.Idle;
                 Log.SpectreRaw("Server entered idle mode.", "plum2", true, "slateblue1");
                 SecretAdmin.Program.Server.AddLog("Server entered idle mode.");
                 break;
@@ -150,12 +150,12 @@ public class SocketServer
                 
             case OutputCodes.ExitActionShutdown:
                 Log.SpectreRaw("Server will be stopped next round.", "plum2", true, "slateblue1");
-                SecretAdmin.Program.Server.Status = ServerStatus.Exiting;
+                SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
                 break;
                 
             case OutputCodes.ExitActionSilentShutdown:
                 Log.SpectreRaw("Server will be stopped silently next round.", "plum2", true, "slateblue1");
-                SecretAdmin.Program.Server.Status = ServerStatus.Exiting;
+                SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
                 break;
                 
             case OutputCodes.ExitActionRestart:

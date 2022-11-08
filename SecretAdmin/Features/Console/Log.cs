@@ -43,7 +43,6 @@ public static class Log
 
     public static void ReadKey()
     {
-        SConsole.ForegroundColor = ConsoleColor.White;
         WriteLine();
         AnsiConsole.Write(new Rule("[darkslategray3]Press any key to continue.[/]"));
         SConsole.ReadKey();

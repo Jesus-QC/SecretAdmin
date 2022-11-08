@@ -23,7 +23,7 @@ public static class InputManager
 
     private static void ManageInput(string input)
     {
-        if (SecretAdmin.Program.Server.Status == ServerStatus.Restarting)
+        if (SecretAdmin.Program.Server.Status == ServerStatus.Offline)
         {
             Log.Alert("The server hasn't been initialized yet.");
             return;

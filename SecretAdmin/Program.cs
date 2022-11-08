@@ -98,7 +98,7 @@ class Program
         Console.Clear();
         AnsiConsole.MarkupLine("[yellow]Exiting safely.[/]");
         
-        if ((ConfigManager?.SecretAdminConfig?.SafeShutdown ?? false) && (Server?.Status.IsOnline() ?? false))
+        if ((ConfigManager?.SecretAdminConfig?.SafeShutdown ?? false) && Server is not null)
             Server.Stop();
         
         if (Paths.MainFolder is null)
