@@ -50,12 +50,27 @@ public class SocketServer
             
         try
         {
+            // To work with this part of SecretAdmin please take a look at how the game manages output
+            // Check the namespace ServerOutput
+            
             while (true)
             {
+                // First byte is the output code
                 int codeBytes = await _stream.ReadAsync(codeBuffer.AsMemory(0, 1), _cancellationTokenSource.Token);
                 byte codeType = codeBuffer[0];
-                int lengthBytes = await _stream.ReadAsync(lenghtBuffer.AsMemory(0, sizeof(int)), _cancellationTokenSource.Token);
+                
+                // We skip non-coloured messages and only handle the event so weird things don't happen.
+                if (codeType >= 16)
+                {
+                    HandleAction(codeType);
+                    continue;
+                }
+                
+                // 4 bytes for the lenght
+                int lengthBytes = await _stream.ReadAsync(lenghtBuffer.AsMemory(0, 4), _cancellationTokenSource.Token);
                 int length = (lenghtBuffer[0] << 24) | (lenghtBuffer[1] << 16) | (lenghtBuffer[2] << 8) | lenghtBuffer[3];
+
+                // We get the amount of bytes that lenght tell us
                 byte[] messageBuffer = new byte[length];
                 int messageBytesRead = await _stream.ReadAsync(messageBuffer.AsMemory(0, length), _cancellationTokenSource.Token);
 
@@ -66,15 +81,6 @@ public class SocketServer
                     
                     break;
                 }
-
-                if (codeType >= 16)
-                {
-                    HandleAction(codeType);
-                    continue;
-                }
-
-                if (length <= 0)
-                    return;
 
                 string message = Encoding.UTF8.GetString(messageBuffer, 0, length);
 
@@ -115,7 +121,7 @@ public class SocketServer
         }
         catch (Exception e)
         {
-            if(e is IOException)
+            if (e is IOException)
                 return;
             
             AnsiConsole.WriteException(e);
