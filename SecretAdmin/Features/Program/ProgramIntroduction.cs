@@ -9,8 +9,7 @@ public static class ProgramIntroduction
 {
     public static void ShowIntroduction()
     {
-        Log.WriteLine();
-        Log.Alert("Hi, welcome to SecretAdmin!");
+        Log.Alert("\nHi, welcome to SecretAdmin!");
         Log.Alert("We have to configure some things before starting!\n");
         
         Rule rule = new Rule("[red]Configuration[/]")
@@ -35,9 +34,8 @@ public static class ProgramIntroduction
         };
         
         SecretAdmin.Program.ConfigManager.SaveConfig(cfg);
-            
-        Log.WriteLine();
-        Log.SpectreRaw("That were all the program configs! You can edit them always in:","skyblue2");
+        
+        Log.SpectreRaw("\nThat were all the program configs! You can edit them always in:","skyblue2");
         Log.Path(Paths.ProgramConfig);
 
         Directory.CreateDirectory(Paths.MainFolder);

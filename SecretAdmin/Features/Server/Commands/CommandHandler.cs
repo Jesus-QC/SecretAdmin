@@ -42,7 +42,7 @@ public class CommandHandler
     {
         try
         {
-            SecretAdmin.Program.Server.Status = ServerStatus.Exiting;
+            SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
             SecretAdmin.Program.Server.SocketServer.SendMessage("exit");
             Log.SpectreRaw("Stopping the server safely.", "lightslateblue");
         }

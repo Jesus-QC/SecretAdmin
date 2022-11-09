@@ -3,8 +3,8 @@
 public enum ServerStatus
 {
     Online,
-    Exiting,
-    Restarting,
+    Offline,
+    Idle,
+    ExitingNextRound,
     RestartingNextRound,
-    Idling
 }

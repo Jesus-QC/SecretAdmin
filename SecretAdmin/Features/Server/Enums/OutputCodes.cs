@@ -2,8 +2,10 @@
 
 public enum OutputCodes : byte
 {
+    // ServerOutput.OutputCodes
+    
     // 0x00 - 0x0F - Reserved for ConsoleColor enum.
-    // 0x10 - 0x16 - OutputCodes - From northwood-studios/LocalAdmin-V2
+    // 0x10 - 0x16 - OutputCodes
 
     RoundRestart = 0x10,
     IdleEnter = 0x11,

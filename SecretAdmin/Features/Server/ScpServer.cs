@@ -16,7 +16,7 @@ public class ScpServer
     private readonly int _port;
     private readonly string[] _args;
     
-    public ServerStatus Status;
+    public ServerStatus Status = ServerStatus.Offline;
     public SocketServer SocketServer;
 
     public MemoryManager MemoryManager;
@@ -38,7 +38,6 @@ public class ScpServer
     {
         if (!Utils.TryGetExecutable(out string executablePath))
         {
-            Log.ReadKey();
             Environment.Exit(-1);
             return;
         }
@@ -100,7 +99,7 @@ public class ScpServer
 
     public void Stop()
     {
-        Status = ServerStatus.Exiting;
+        Status = ServerStatus.Offline;
 
         if (MemoryManager is not null)
         {
@@ -132,18 +131,18 @@ public class ScpServer
         switch (Status)
         {
             case ServerStatus.RestartingNextRound:
-            case ServerStatus.Restarting:
             {
                 Restart();
                 break;
             }
-            case ServerStatus.Exiting:
+            case ServerStatus.Offline:
+            case ServerStatus.ExitingNextRound:
             {
                 Stop();
                 Environment.Exit(0);
                 break;
             }
-            case ServerStatus.Idling:
+            case ServerStatus.Idle:
             case ServerStatus.Online:
             {
                 Log.Raw(@"
@@ -173,7 +172,7 @@ public class ScpServer
 
     private void StdOut(object _, DataReceivedEventArgs ev)
     {
-        if(_logStdOut)
+        if (_logStdOut)
             Log.SpectreRaw("[[STDOUT]]" + ev.Data.EscapeMarkup(), "paleturquoise4");
         
         AddOutputLog(ev.Data, "STDOUT");
@@ -181,7 +180,7 @@ public class ScpServer
 
     private void StdErr(object _, DataReceivedEventArgs ev)
     {
-        if(_logStdErr)
+        if (_logStdErr)
             Log.SpectreRaw("[[STDERR]]" + ev.Data.EscapeMarkup(), "indianred");
         
         AddOutputLog(ev.Data, "STDERR");
@@ -189,7 +188,7 @@ public class ScpServer
 
     public void AddLog(string message, string title = "")
     {
-        if(string.IsNullOrEmpty(message))
+        if (string.IsNullOrEmpty(message))
             return;
 
         _serverLogger.AppendLog(string.IsNullOrWhiteSpace(title) ? message : $"[{title}] {message}");
@@ -197,7 +196,7 @@ public class ScpServer
 
     private void AddOutputLog(string message, string title = "")
     {
-        if(string.IsNullOrEmpty(message))
+        if (string.IsNullOrEmpty(message))
             return;
 
         _outputLogger.AppendLog(string.IsNullOrWhiteSpace(title) ? message : $"[{title}] {message}");

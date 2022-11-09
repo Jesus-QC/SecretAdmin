@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
+using Spectre.Console;
 
 namespace SecretAdmin.Features.Server;
 
@@ -25,6 +26,7 @@ public static class Utils
             return true;
             
         Log.Alert("\nExecutable not found, make sure this file is on the same folder as LocalAdmin.");
+        Log.ReadKey();
         return false;
     }
 
@@ -100,4 +102,10 @@ public static class Utils
             File.Delete(outputLog);
         }
     }
+
+    public static void SaveCrashLogs() 
+        => File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-crash.log"), AnsiConsole.ExportText());
+
+    public static void SaveLogs() 
+        => File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"), AnsiConsole.ExportText());
 }
