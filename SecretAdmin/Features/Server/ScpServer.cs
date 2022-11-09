@@ -172,7 +172,7 @@ public class ScpServer
 
     private void StdOut(object _, DataReceivedEventArgs ev)
     {
-        if(_logStdOut)
+        if (_logStdOut)
             Log.SpectreRaw("[[STDOUT]]" + ev.Data.EscapeMarkup(), "paleturquoise4");
         
         AddOutputLog(ev.Data, "STDOUT");
@@ -180,7 +180,7 @@ public class ScpServer
 
     private void StdErr(object _, DataReceivedEventArgs ev)
     {
-        if(_logStdErr)
+        if (_logStdErr)
             Log.SpectreRaw("[[STDERR]]" + ev.Data.EscapeMarkup(), "indianred");
         
         AddOutputLog(ev.Data, "STDERR");
@@ -188,7 +188,7 @@ public class ScpServer
 
     public void AddLog(string message, string title = "")
     {
-        if(string.IsNullOrEmpty(message))
+        if (string.IsNullOrEmpty(message))
             return;
 
         _serverLogger.AppendLog(string.IsNullOrWhiteSpace(title) ? message : $"[{title}] {message}");
@@ -196,7 +196,7 @@ public class ScpServer
 
     private void AddOutputLog(string message, string title = "")
     {
-        if(string.IsNullOrEmpty(message))
+        if (string.IsNullOrEmpty(message))
             return;
 
         _outputLogger.AppendLog(string.IsNullOrWhiteSpace(title) ? message : $"[{title}] {message}");

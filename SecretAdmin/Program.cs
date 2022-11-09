@@ -73,7 +73,7 @@ class Program
         InputManager.Start();
     }
 
-    private static async void OnError(object obj, UnhandledExceptionEventArgs ev)
+    private static void OnError(object obj, UnhandledExceptionEventArgs ev)
     {
         _exceptionalExit = true;
         
@@ -83,14 +83,12 @@ class Program
         try
         {
             AnsiConsole.WriteException((Exception)ev.ExceptionObject);
-            await File.WriteAllTextAsync(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-crash.log"), AnsiConsole.ExportText());
+            Utils.SaveCrashLogs();
         }
         catch (Exception e)
         {
             AnsiConsole.WriteException(e);
         }
-        
-        await Task.Delay(1000);
     }
         
     private static void OnExit(object obj, EventArgs ev)
@@ -106,8 +104,8 @@ class Program
 
         if (!_exceptionalExit)
         {
-            Task.Delay(0);
-            File.WriteAllText(Path.Combine(Paths.ProgramLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}.log"), AnsiConsole.ExportText());
+            try { Utils.SaveLogs(); }
+            catch { Utils.SaveCrashLogs(); }
         }
 
         AnsiConsole.MarkupLine("[green]Exited safely! Program can be killed.[/]");

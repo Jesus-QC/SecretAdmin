@@ -133,39 +133,32 @@ public class SocketServer
         switch ((OutputCodes)action)
         {
             case OutputCodes.RoundRestart:
-                Log.SpectreRaw("Waiting for players.", "lightsteelblue1", true, "slateblue1");
                 SecretAdmin.Program.Server.AddLog("Waiting for players.");
                 break;
 
             case OutputCodes.IdleEnter:
                 SecretAdmin.Program.Server.Status = ServerStatus.Idle;
-                Log.SpectreRaw("Server entered idle mode.", "plum2", true, "slateblue1");
                 SecretAdmin.Program.Server.AddLog("Server entered idle mode.");
                 break;
 
             case OutputCodes.IdleExit:
                 SecretAdmin.Program.Server.Status = ServerStatus.Online;
-                Log.SpectreRaw("Server exited idle mode.", "plum2", true, "slateblue1");
                 SecretAdmin.Program.Server.AddLog("Server exited idle mode.");
                 break;
                 
             case OutputCodes.ExitActionReset:
-                Log.SpectreRaw("Server won't be restarted next round.", "plum2", true, "slateblue1");
                 SecretAdmin.Program.Server.Status = ServerStatus.Online;
                 break;
                 
             case OutputCodes.ExitActionShutdown:
-                Log.SpectreRaw("Server will be stopped next round.", "plum2", true, "slateblue1");
                 SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
                 break;
                 
             case OutputCodes.ExitActionSilentShutdown:
-                Log.SpectreRaw("Server will be stopped silently next round.", "plum2", true, "slateblue1");
                 SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
                 break;
                 
             case OutputCodes.ExitActionRestart:
-                Log.SpectreRaw("Server will be restarted next round.", "plum2", true, "slateblue1");
                 SecretAdmin.Program.Server.Status = ServerStatus.RestartingNextRound;
                 break;
 
@@ -177,6 +170,12 @@ public class SocketServer
         
     private bool HandleSecretAdminEvents(string message)
     {
+        if (message.StartsWith("Welcome to"))
+        {
+            Log.SpectreRaw("[mediumorchid1_1]EXILED Started![/]", showTimeStamp: true);
+            return false;
+        }
+        
         // if (message == "Command secretadminping does not exist!")
         // {
         //     SecretAdmin.Program.Server.SilentCrashHandler.OnReceivePing();

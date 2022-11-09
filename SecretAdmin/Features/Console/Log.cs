@@ -22,7 +22,7 @@ public static class Log
                                                                  ");
         Write($"[cyan]Secret Admin - Version v{SecretAdmin.Program.Version}[/]");
         WriteLine(" [lightgoldenrod1]by Jesus-QC[/]");
-        WriteLine($"[thistle1]Released under MIT License Copyright © Jesus-QC {DateTime.Now.Year}[/]");
+        WriteLine($"[thistle1]Released under MIT License Copyright © Jesus-QC 2021-{DateTime.Now.Year}[/]");
     }
         
     public static void Input(string message, string title = "SERVER")
@@ -31,10 +31,10 @@ public static class Log
         WriteLine(message.EscapeMarkup());
     }
         
-    public static void Alert(object message, bool showTimeStamp = true)
+    public static void Alert(string message, bool showTimeStamp = true)
     {
         if (showTimeStamp)
-            Write($"[[{DateTime.Now:T}]] ", ConsoleColor.DarkRed);
+            AddTimeStamp();
             
         Write("[[SecretAdmin]] ", ConsoleColor.Yellow);
         SConsole.Write("(Alert) ");
@@ -43,7 +43,7 @@ public static class Log
 
     public static void ReadKey()
     {
-        WriteLine();
+        SConsole.WriteLine();
         AnsiConsole.Write(new Rule("[darkslategray3]Press any key to continue.[/]"));
         SConsole.ReadKey();
     }
@@ -63,53 +63,68 @@ public static class Log
         AnsiConsole.Write(p);
         SConsole.WriteLine();
     }
+
+    public static void Raw(string message, ConsoleColor color = ConsoleColor.White, bool showTimeStamp = true)
+    {
+        if (showTimeStamp)
+            AddTimeStamp();
         
-    public static void Raw(object message, ConsoleColor color = ConsoleColor.White, bool showTimeStamp = true) => WriteLine(showTimeStamp ? $"[[{DateTime.Now:T}]] {message.ToString().EscapeMarkup()}" : message, color);
-    public static void SpectreRaw(object message, string color = "white", bool showTimeStamp = false, string timestampColor = "white") => WriteLine(showTimeStamp ? $"[{timestampColor}][[{DateTime.Now:T}]][/] [{color}]{message}[/]" : $"[{color}]{message}[/]");
+        WriteLine(message.EscapeMarkup(), color);
+    }
+
+    public static void SpectreRaw(string message, string color = "white", bool showTimeStamp = false)
+    {
+        if (showTimeStamp)
+            AddTimeStamp();
+        
+        WriteLine($"[{color}]{message}[/]");
+    }
 
     private static void Info(string title, string message)
     {
-        Write($"[[{DateTime.Now:T}]] ", ConsoleColor.Magenta);
-        Write("[[INFO]] ", ConsoleColor.Cyan);
-        Write($"[{title}] ", ConsoleColor.Yellow);
+        AddTimeStamp();
+        Write("[mediumpurple1][[[lightskyblue1]INFO[/]]][/] ");
+        Write($"[khaki1][{title}][/] ");
         WriteLine(message.EscapeMarkup());
     }
 
     private static void Error(string title, string message)
     {
-        Write($"[[{DateTime.Now:T}]] ", ConsoleColor.Magenta);
-        Write("[deeppink2][[ERROR]][/] ");
-        Write($"[{title}] ", ConsoleColor.Yellow);
+        AddTimeStamp();
+        Write("[maroon][[[deeppink2]ERROR[/]]][/] ");
+        Write($"[gold1][{title}][/] ");
         WriteLine($"[deeppink2]{message.EscapeMarkup()}[/]");
     }
 
     private static void Debug(string title, string message)
     {
-        Write($"[grey58][[{DateTime.Now:T}]][/] ");
-        Write("[[DEBUG]] ", ConsoleColor.Blue);
+        AddTimeStamp();
+        Write("[lightcyan1][[[cornflowerblue]DEBUG[/]]][/] ");
         Write($"[grey58][{title}][/] ");
-        WriteLine(message.EscapeMarkup(), ConsoleColor.Cyan);
+        WriteLine($"[cornflowerblue]{message.EscapeMarkup()}[/]");
     }
 
     private static void Warn(string title, string message)
     {
-        Write($"[[{DateTime.Now:T}]] ", ConsoleColor.Magenta);
-        Write("[gold1][[WARN]][/] ");
-        Write($"[plum2][{title}][/] ", ConsoleColor.DarkYellow);
-        WriteLine(message.EscapeMarkup(), ConsoleColor.Yellow);
+        AddTimeStamp();
+        Write("[wheat1][[[gold1]WARN[/]]][/] ");
+        Write($"[mediumpurple1][{title}][/] ");
+        WriteLine($"[gold1]{message.EscapeMarkup()}[/]");
     }
 
-    public static void WriteLine(object message = null, ConsoleColor color = ConsoleColor.White)
+    private static void AddTimeStamp() => AnsiConsole.Markup($"[paleturquoise4][[[deepskyblue4_1]{DateTime.Now:T}[/]]][/] ");
+
+    public static void WriteLine(string message, ConsoleColor color = ConsoleColor.White)
     {
         SConsole.ForegroundColor = color;
-        AnsiConsole.MarkupLine(message?.ToString() ?? "");
+        AnsiConsole.MarkupLine(message);
         SConsole.ForegroundColor = ConsoleColor.White;
     }
         
-    public static void Write(object message = null, ConsoleColor color = ConsoleColor.White)
+    public static void Write(string message, ConsoleColor color = ConsoleColor.White)
     {
         SConsole.ForegroundColor = color;
-        AnsiConsole.Markup(message?.ToString() ?? "");
+        AnsiConsole.Markup(message);
         SConsole.ForegroundColor = ConsoleColor.White;
     }
 
@@ -193,13 +208,13 @@ public static class Log
             switch (code)
             {
                 case 10:
-                    SpectreRaw(message.EscapeMarkup(), "springgreen3", true, "slateblue1");
+                    SpectreRaw(message.EscapeMarkup(), "springgreen3", true);
                     break;
                 case 15:
-                    SpectreRaw(message.EscapeMarkup(), "mediumpurple4", true, "mediumpurple4");
+                    SpectreRaw(message.EscapeMarkup(), "mediumpurple4", true);
                     break;
                 case 6:
-                    SpectreRaw(message.EscapeMarkup(), "dodgerblue1", true, "mediumpurple4");
+                    SpectreRaw(message.EscapeMarkup(), "dodgerblue1", true);
                     break;
                 default:
                     Raw(message, (ConsoleColor)code);
