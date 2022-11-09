@@ -38,22 +38,16 @@ class Program
 
     private static void Start(string[] args)
     {
-        // ArgumentsManager.Args arguments = ArgumentsManager.GetArgs(args);
- 
-        // ConfigManager.LoadConfig();
- 
-        // if(ConfigManager.SecretAdminConfig.AutoUpdater)
-        //     AutoUpdater.CheckForUpdates();
-        
-        // Utils.ArchiveControlLogs();
-        
+        if (Console.WindowWidth is 0) // Pterodactyl
+            AnsiConsole.Console.Profile.Width = 100;
+
         if (args.Length == 0 || !int.TryParse(args[0], out int port))
             port = Log.GetOption("Please introduce the port you want to start the server on", 7777);
         else
             args = args.Skip(1).ToArray();
         
         Log.Intro();
-        
+
         Paths.Load(port);
 
         ConfigManager = new ConfigManager();
