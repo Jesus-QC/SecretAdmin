@@ -39,7 +39,7 @@ class Program
     private static void Start(string[] args)
     {
         if (Console.WindowWidth is 0) // Pterodactyl
-            AnsiConsole.Console.Profile.Width = 100;
+            AnsiConsole.Console.Profile.Width = 1000;
 
         if (args.Length == 0 || !int.TryParse(args[0], out int port))
             port = Log.GetOption("Please introduce the port you want to start the server on", 7777);
