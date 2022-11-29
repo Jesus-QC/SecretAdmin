@@ -39,6 +39,7 @@ public class SocketServer
 
     public void Stop()
     {
+        _cancellationTokenSource.Cancel();
         _listener.Stop();
         _client.Close();
     }
@@ -53,14 +54,14 @@ public class SocketServer
             // To work with this part of SecretAdmin please take a look at how the game manages output
             // Check the namespace ServerOutput
             
-            while (true)
+            while (!_cancellationTokenSource.IsCancellationRequested)
             {
                 // First byte is the output code
                 int codeBytes = await _stream.ReadAsync(codeBuffer.AsMemory(0, 1), _cancellationTokenSource.Token);
                 byte codeType = codeBuffer[0];
                 
                 // We skip non-coloured messages and only handle the event so weird things don't happen.
-                if (codeType >= 16)
+                if (codeType > 0xF)
                 {
                     HandleAction(codeType);
                     continue;
@@ -97,7 +98,7 @@ public class SocketServer
         }
         finally
         {
-            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource.Cancel();
         }
     }
     
@@ -162,6 +163,10 @@ public class SocketServer
                 SecretAdmin.Program.Server.Status = ServerStatus.RestartingNextRound;
                 break;
 
+            case OutputCodes.Heartbeat:
+                SecretAdmin.Program.Server.SilentCrashHandler?.OnReceivedHeartbeat();
+                break;
+            
             default:
                 Log.Alert($"Received unknown output code ({(OutputCodes)action}), possible buffer spam.");
                 break;
@@ -170,19 +175,8 @@ public class SocketServer
         
     private bool HandleSecretAdminEvents(string message)
     {
-        if (message.StartsWith("Welcome to"))
-        {
-            Log.SpectreRaw("[mediumorchid1_1]EXILED Started![/]", showTimeStamp: true);
-            return false;
-        }
         
-        // if (message == "Command secretadminping does not exist!")
-        // {
-        //     SecretAdmin.Program.Server.SilentCrashHandler.OnReceivePing();
-        //     return false;
-        // }
         
-        // ..
         
         return true;
     }

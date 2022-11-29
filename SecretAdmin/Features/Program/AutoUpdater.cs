@@ -1,7 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -12,16 +12,16 @@ namespace SecretAdmin.Features.Program;
 
 public static class AutoUpdater
 {
-    public static void CheckForUpdates()
+    public static async Task CheckForUpdates()
     {
         Log.SpectreRaw("[gray]UPDATER:[/] Setting up HttpClient...");
                 
-        HttpClient client = new();
+        using HttpClient client = new();
         client.DefaultRequestHeaders.Add("User-Agent", "SecretAdmin");
                 
         Log.SpectreRaw("[gray]UPDATER:[/] Getting latest releases...");
                 
-        string content =  client.GetStringAsync("https://api.github.com/repos/Jesus-QC/SecretAdmin/releases/latest").GetAwaiter().GetResult();
+        string content =  await client.GetStringAsync("https://api.github.com/repos/Jesus-QC/SecretAdmin/releases/latest");
                 
         Log.SpectreRaw("[gray]UPDATER:[/] Deserializing the releases...");
                 
@@ -34,17 +34,32 @@ public static class AutoUpdater
         if (SecretAdmin.Program.Version < v)
         {
             Log.SpectreRaw("[gray]UPDATER:[/] [red]SecretAdmin is outdated, updating the plugin.[/]");
-            Update(a?.tag_name);
+            await client.DownloadUpdateAsync(a?.tag_name);
         }
-                
-        Log.SpectreRaw("[gray]UPDATER:[/] [green]SecretAdmin is updated![/]\n");
         
         Thread.Sleep(100);
     }
 
-    private static void Update(string tag)
+    private static async Task DownloadUpdateAsync(this HttpClient client, string tag)
     {
-        // todo
+        FileInfo path = new(Assembly.GetExecutingAssembly().Location);
+        
+        File.Move(path.FullName, path.FullName + ".old", true);
+
+        try
+        {
+            Stream file =  await client.GetStreamAsync($"https://github.com/Jesus-QC/SecretAdmin/releases/download/{tag}/SecretAdmin");
+            await file.CopyToAsync(path.Open(FileMode.CreateNew));
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.WriteException(e);
+            File.Move(path.FullName + ".old", path.FullName);
+            
+            Log.SpectreRaw("[gray]UPDATER:[/] [red]An error occured while updating SecretAdmin, procedure canceled.[/]");
+        }
+
+        Log.SpectreRaw("[gray]UPDATER:[/] [green]SecretAdmin has been successfully updated, restart to apply changes![/]\n");
     }
     
     private record Api(string tag_name);

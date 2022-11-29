@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using SecretAdmin.Features.Console;
@@ -20,7 +21,7 @@ public class ScpServer
     public SocketServer SocketServer;
 
     public MemoryManager MemoryManager;
-    //public SilentCrashHandler SilentCrashHandler;
+    public SilentCrashHandler SilentCrashHandler;
 
     private bool _logStdErr;
     private bool _logStdOut;
@@ -48,7 +49,7 @@ public class ScpServer
         _serverLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-server.log"));
         _outputLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-output.log"));
 
-        string[] gameArgs = 
+        List<string> gameArgs = new List<string>() 
         {
             "-batchmode",
             "-nographics", 
@@ -58,6 +59,11 @@ public class ScpServer
             $"-console{SocketServer.Port}", 
             $"-port{_port}",
         };
+
+        if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+        {
+            gameArgs.Add("-heartbeat");
+        }
 
         ProcessStartInfo startInfo = new(executablePath, string.Join(' ', gameArgs) + ' ' + string.Join(' ', _args ?? Array.Empty<string>()))
         {
@@ -90,11 +96,11 @@ public class ScpServer
 
         MemoryManager = new MemoryManager(_process);
         MemoryManager.Start();
-
-        // QuickEdit Mode in windows make false crash positives. 👀
-        // Until that, feature disabled.
-        // SilentCrashHandler = new SilentCrashHandler(SocketServer);
-        // SilentCrashHandler.Start();
+        
+        if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+        {
+            SilentCrashHandler = new SilentCrashHandler();
+        }
     }
 
     public void Stop()
@@ -103,12 +109,15 @@ public class ScpServer
 
         if (MemoryManager is not null)
         {
-            MemoryManager.Killed = true;
+            MemoryManager.Stop();
             MemoryManager = null;
         }
-        
-        // SilentCrashHandler.Killed = true;
-        // SilentCrashHandler = null;
+
+        if (SilentCrashHandler is not null)
+        {
+            SilentCrashHandler.Stop();
+            SilentCrashHandler = null;
+        }
 
         if (SocketServer is not null)
         {

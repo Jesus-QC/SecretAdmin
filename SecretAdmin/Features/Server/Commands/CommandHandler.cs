@@ -44,6 +44,14 @@ public class CommandHandler
         {
             SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
             SecretAdmin.Program.Server.SocketServer.SendMessage("exit");
+            System.Console.Clear();
+            
+            Log.WriteLine(@".   ___     _ _   _             .", ConsoleColor.Red);
+            Log.WriteLine(@"|  | __|_ _(_) |_(_)_ _  __ _   |", ConsoleColor.DarkCyan);
+            Log.WriteLine(@"|  | _|\ \ / |  _| | ' \/ _` |  |", ConsoleColor.Yellow);
+            Log.WriteLine(@"|  |___/_\_\_|\__|_|_||_\__, |  |", ConsoleColor.DarkMagenta);
+            Log.WriteLine(@".                       |___/   .", ConsoleColor.Red);
+
             Log.SpectreRaw("Stopping the server safely.", "lightslateblue");
         }
         catch

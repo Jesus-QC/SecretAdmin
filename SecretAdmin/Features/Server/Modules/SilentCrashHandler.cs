@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
 
@@ -6,33 +7,56 @@ namespace SecretAdmin.Features.Server.Modules;
 
 public class SilentCrashHandler
 {
-    private readonly SocketServer _server;
-    public bool Killed;
-    private int _pingCount;
+    private readonly CancellationTokenSource _cancellationToken = new ();
+    private bool _awaitingForFirstHeartbeat = true;
+    private bool _receivedHeartbeat;
 
-    public SilentCrashHandler(SocketServer server) => _server = server;
-
-    private async void SendPing()
+    private async void CheckHeartbeats()
     {
-        await Task.Delay(15000);
-        while (!Killed)
-        {
-            if (SecretAdmin.Program.Server.Status == ServerStatus.Online)
-            {
-                _server.SendMessage("secretadminping");
-                _pingCount++;
-            }
-            await Task.Delay(10000);
+        byte secondsWithoutContact = 0;
 
-            if (_pingCount != 3) 
-                continue;
+        while (!_cancellationToken.IsCancellationRequested)
+        {
+            if (SecretAdmin.Program.Server.Status is ServerStatus.Offline)
+                return;
             
-            Log.Alert("The server silently crashed, restarting....");
-            SecretAdmin.Program.Server.Restart();
+            if (SecretAdmin.Program.Server.Status is ServerStatus.Idle)
+                continue;
+                
+            if (secondsWithoutContact >= 16)
+            {
+                Log.Alert("Not Receiving Heartbeats... Waiting 5 last seconds.");
+                await Task.Delay(5000);
+                
+                if (!_receivedHeartbeat)
+                {
+                    Log.Alert("Server not sending heartbeats... Restarting server.");
+                    SecretAdmin.Program.Server.Restart();
+                    return;
+                }
+
+                Log.Alert("Server sent a heartbeat in the last attempt... Continuing procedure.");
+            }
+
+            secondsWithoutContact += 2;
+            
+            if (_receivedHeartbeat)
+                secondsWithoutContact = 0;
+
+            await Task.Delay(2000);
         }
     }
 
-    public void OnReceivePing() => _pingCount = 0;
-    
-    public void Start() => Task.Run(SendPing);
+    public void Stop() => _cancellationToken.Cancel();
+
+    public void OnReceivedHeartbeat()
+    {
+        if (_awaitingForFirstHeartbeat)
+        {
+            _awaitingForFirstHeartbeat = false;
+            Task.Run(CheckHeartbeats, _cancellationToken.Token);
+        }
+
+        _receivedHeartbeat = true;
+    }
 }

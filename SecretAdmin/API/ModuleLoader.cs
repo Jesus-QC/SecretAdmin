@@ -1,0 +1,57 @@
+﻿using System;
+using System.IO;
+using System.Reflection;
+using SecretAdmin.API.Extensions;
+using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Program;
+using SecretAdmin.Features.Program.Config;
+using Spectre.Console;
+
+namespace SecretAdmin.API;
+
+public static class ModuleLoader
+{
+    public static void Load()
+    {
+        Log.SpectreRaw("[gray]MODULE LOADER:[/] Loading modules...");
+        foreach (string modulePath in Directory.GetFiles(Paths.ModulesFolder, "*.dll"))
+        {
+            try
+            {
+                Assembly moduleAssembly = Assembly.LoadFrom(modulePath);
+
+                foreach (Type type in moduleAssembly.GetTypes())
+                {
+                    if (type.IsSubclassOf(typeof(IModule)))
+                    {
+                        IModule module = Activator.CreateInstance(type) as IModule;
+
+                        if (module is null)
+                        {
+                            Log.SpectreRaw($"[gray]MODULE LOADER:[/] [red]Couldn't activate an instance of the module: {moduleAssembly.GetName().FullName.EscapeMarkup()}[/]");
+                            return;
+                        }
+                        
+                        string configPath = module.GetConfigPath();
+                        
+                        if (File.Exists(configPath))
+                            module!.Config = ConfigManager.Deserializer.Deserialize<IModuleConfig>(File.ReadAllText(configPath));
+
+                        File.WriteAllText(configPath, ConfigManager.Serializer.Serialize(module.Config));
+                        
+                        module.OnEnabled();
+                        
+                        Log.SpectreRaw($"[gray]MODULE LOADER:[/] [green]The module {module.Name.EscapeMarkup()} {module.Version.EscapeMarkup()} by {module.Author.EscapeMarkup()} has been enabled![/]");
+                    }
+                }
+                
+            }
+            catch (Exception e)
+            {
+                Log.SpectreRaw($"[gray]MODULE LOADER:[/] [red]There was an issue loading the module in the path: {modulePath}[/]");
+                AnsiConsole.WriteException(e);
+                throw;
+            }
+        }
+    }
+}
