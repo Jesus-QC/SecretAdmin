@@ -30,14 +30,8 @@ public class CommandHandler
         Log.Alert("StdOut logs toggled.");
         SecretAdmin.Program.Server.ToggleStdOut();
     }
-    
-    [ConsoleCommand("Quit")]
-    private void QuitCommand()
-    {
-        ExitCommand();
-    }
-        
-    [ConsoleCommand("Exit")]
+
+    [ConsoleCommand("Exit", new[] { "Quit" })]
     private void ExitCommand()
     {
         try
@@ -60,7 +54,7 @@ public class CommandHandler
         }
     }
         
-    [ConsoleCommand("SR")]
+    [ConsoleCommand("SR", new [] { "serverrestart" })]
     private void SoftRestartCommand()
     {
         Log.SpectreRaw("Restarting the server...", "lightslateblue");
@@ -74,9 +68,16 @@ public class CommandHandler
         foreach (MethodInfo method in ti.DeclaredMethods)
         {
             IEnumerable<Attribute> attributes = method.GetCustomAttributes();
-                
+
             if (attributes.FirstOrDefault() is ConsoleCommandAttribute query)
+            {
                 _commands.Add(query.Name.ToLower(), method);
+
+                foreach (string alias in query.Aliases)
+                {
+                    _commands.Add(alias.ToLower(), method);
+                }
+            }
         }
     }
 
