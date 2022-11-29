@@ -2,5 +2,5 @@
 
 public interface IModuleConfig
 {
-    public bool IsAllowed { get; set; }
+    public bool IsEnabled { get; set; }
 }

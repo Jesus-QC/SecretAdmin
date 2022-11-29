@@ -25,23 +25,16 @@ public static class ModuleLoader
 
                 foreach (Type type in moduleAssembly.GetTypes())
                 {
-                    if (type.IsSubclassOf(typeof(IModule)))
+                    if (type.GetInterfaces().Contains(typeof(IModule<>)))
                     {
-                        IModule module = Activator.CreateInstance(type) as IModule;
-
-                        if (module is null)
+                        if (Activator.CreateInstance(type) is not IModule<IModuleConfig> module)
                         {
                             Log.SpectreRaw($"[gray]MODULE LOADER:[/] [red]Couldn't activate an instance of the module: {moduleAssembly.GetName().FullName.EscapeMarkup()}[/]");
                             return;
                         }
-                        
-                        string configPath = module.GetConfigPath();
-                        
-                        if (File.Exists(configPath))
-                            module!.Config = ConfigManager.Deserializer.Deserialize<IModuleConfig>(File.ReadAllText(configPath));
 
-                        File.WriteAllText(configPath, ConfigManager.Serializer.Serialize(module.Config));
-                        
+                        module.TryLoadConfig();
+
                         module.OnEnabled();
                         
                         Log.SpectreRaw($"[gray]MODULE LOADER:[/] [green]The module {module.Name.EscapeMarkup()} {module.Version.EscapeMarkup()} by {module.Author.EscapeMarkup()} has been enabled![/]");
