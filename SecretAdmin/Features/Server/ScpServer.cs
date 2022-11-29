@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using SecretAdmin.API.Events;
+using SecretAdmin.API.Events.Arguments;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server.Enums;
@@ -37,6 +39,10 @@ public class ScpServer
     
     public void Start()
     {
+        StartingServerEventArgs args = new (this);
+        if (!args.IsAllowed)
+            return;
+        
         if (!Utils.TryGetExecutable(out string executablePath))
         {
             Environment.Exit(-1);
@@ -49,7 +55,7 @@ public class ScpServer
         _serverLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-server.log"));
         _outputLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-output.log"));
 
-        List<string> gameArgs = new List<string>() 
+        List<string> gameArgs = new() 
         {
             "-batchmode",
             "-nographics", 
@@ -105,6 +111,10 @@ public class ScpServer
 
     public void Stop()
     {
+        StoppingServerEventArgs args = new (this);
+        if(!args.IsAllowed)
+            return;
+        
         Status = ServerStatus.Offline;
 
         if (MemoryManager is not null)
@@ -130,6 +140,12 @@ public class ScpServer
 
     public void Restart()
     {
+        RestartingServerEventArgs args = new (this);
+        Handler.OnRestartingServer(args);
+        
+        if (!args.IsAllowed)
+            return;
+            
         System.Console.Clear();
         Stop();
         Start();

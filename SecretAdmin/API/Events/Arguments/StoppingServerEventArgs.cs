@@ -1,8 +1,9 @@
-﻿using SecretAdmin.Features.Server;
+﻿using System;
+using SecretAdmin.Features.Server;
 
 namespace SecretAdmin.API.Events.Arguments;
 
-public class StoppingServerEventArgs
+public class StoppingServerEventArgs : EventArgs
 {
     public bool IsAllowed { get; set; }
     public ScpServer Server { get; }

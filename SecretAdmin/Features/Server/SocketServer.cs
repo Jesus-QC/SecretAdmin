@@ -5,6 +5,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SecretAdmin.API.Events;
+using SecretAdmin.API.Events.Arguments;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
 using Spectre.Console;
@@ -85,8 +87,13 @@ public class SocketServer
 
                 string message = Encoding.UTF8.GetString(messageBuffer, 0, length);
 
-                if (!HandleSecretAdminEvents(message)) 
+                ReceivingMessageEventArgs args = new (message);
+                Handler.OnReceivingMessage(args);
+                
+                if (!args.IsAllowed) 
                     continue;
+
+                message = args.Message;
                     
                 SecretAdmin.Program.Server.AddLog(message, $"[{DateTime.Now:T}]");
                 Log.HandleMessage(message, codeType);
@@ -131,7 +138,13 @@ public class SocketServer
         
     private static void HandleAction(byte action)
     {
-        switch ((OutputCodes)action)
+        ReceivingActionEventArgs args = new ((OutputCodes)action);
+        Handler.OnReceivingAction(args);
+        
+        if (!args.IsAllowed)
+            return;
+        
+        switch (args.ActionCode)
         {
             case OutputCodes.RoundRestart:
                 SecretAdmin.Program.Server.AddLog("Waiting for players.");
@@ -171,13 +184,5 @@ public class SocketServer
                 Log.Alert($"Received unknown output code ({(OutputCodes)action}), possible buffer spam.");
                 break;
         }
-    }
-        
-    private bool HandleSecretAdminEvents(string message)
-    {
-        
-        
-        
-        return true;
     }
 }

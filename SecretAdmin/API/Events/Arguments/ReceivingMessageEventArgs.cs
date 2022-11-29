@@ -1,6 +1,8 @@
-﻿namespace SecretAdmin.API.Events.Arguments;
+﻿using System;
 
-public class ReceivingMessageEventArgs
+namespace SecretAdmin.API.Events.Arguments;
+
+public class ReceivingMessageEventArgs : EventArgs
 {
     public bool IsAllowed { get; set; }
     public string Message { get; set; }
