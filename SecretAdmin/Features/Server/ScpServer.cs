@@ -40,6 +40,7 @@ public class ScpServer
     public void Start()
     {
         StartingServerEventArgs args = new (this);
+        Handler.OnStartingServer(args);
         if (!args.IsAllowed)
             return;
         
@@ -112,6 +113,7 @@ public class ScpServer
     public void Stop()
     {
         StoppingServerEventArgs args = new (this);
+        Handler.OnStoppingServer(args);
         if(!args.IsAllowed)
             return;
         

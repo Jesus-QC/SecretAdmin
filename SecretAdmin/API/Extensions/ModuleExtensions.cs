@@ -9,7 +9,7 @@ namespace SecretAdmin.API.Extensions;
 
 public static class ModuleExtensions
 {
-    public static string GetConfigPath<T>(this IModule<T> module) where T : IModuleConfig
+    public static string GetConfigPath(this IModule module)
     {
         string cleanName = module.Name;
         
@@ -17,23 +17,5 @@ public static class ModuleExtensions
             cleanName = cleanName.Replace(invalidChar, '_');
 
         return Path.Combine(Paths.ModulesConfigFolder, cleanName + ".yml");
-    }
-
-    public static void TryLoadConfig<T>(this IModule<T> module) where T : IModuleConfig
-    {
-        try
-        {
-            string configPath = module.GetConfigPath();
-        
-            if (File.Exists(configPath))
-                module!.Config = ConfigManager.Deserializer.Deserialize<T>(File.ReadAllText(configPath));
-        
-            File.WriteAllText(configPath!, ConfigManager.Serializer.Serialize(module.Config));
-        }
-        catch (Exception e)
-        {
-            Log.Alert("There was an issue when loading the module configs.");
-            AnsiConsole.WriteException(e);
-        }
     }
 }

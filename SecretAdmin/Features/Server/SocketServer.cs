@@ -87,7 +87,7 @@ public class SocketServer
 
                 string message = Encoding.UTF8.GetString(messageBuffer, 0, length);
 
-                ReceivingMessageEventArgs args = new (message);
+                ReceivingMessageEventArgs args = new (message, codeType);
                 Handler.OnReceivingMessage(args);
                 
                 if (!args.IsAllowed) 
@@ -96,7 +96,7 @@ public class SocketServer
                 message = args.Message;
                     
                 SecretAdmin.Program.Server.AddLog(message, $"[{DateTime.Now:T}]");
-                Log.HandleMessage(message, codeType);
+                Log.HandleMessage(message, args.Color);
             }
         }
         catch (Exception)
