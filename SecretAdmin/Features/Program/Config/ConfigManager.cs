@@ -26,6 +26,7 @@ public class ConfigManager
         }
         
         SecretAdminConfig = Deserializer.Deserialize<MainConfig>(File.ReadAllText(Paths.ProgramConfig));
+        File.WriteAllText(Paths.ProgramConfig, Serializer.Serialize(SecretAdminConfig));
     }
 
     public void SaveConfig(MainConfig config)
