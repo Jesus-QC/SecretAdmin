@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
@@ -7,9 +8,9 @@ namespace SecretAdmin.Features.Server.Modules;
 
 public class MemoryManager
 {
+    private readonly CancellationTokenSource _cancellationToken = new ();
     private readonly Process _process;
-    public bool Killed;
-    
+
     public MemoryManager(Process process) => _process = process;
 
     public long GetMemory()
@@ -23,13 +24,13 @@ public class MemoryManager
         int warns = 0;
         int maxMem = SecretAdmin.Program.ConfigManager.SecretAdminConfig.MaxDefaultMemory;
         
-        while (!Killed)
+        while (!_cancellationToken.IsCancellationRequested)
         {
-            if (SecretAdmin.Program.Server.Status != ServerStatus.Online)
+            if (SecretAdmin.Program.Server.Status is ServerStatus.Offline)
                 return;
 
             long memory = GetMemory();
-
+            
             if (memory > maxMem)
             {
                 Log.SpectreRaw($"LOW MEMORY. USING {memory}MB / {maxMem}MB", "gold1");
@@ -45,5 +46,7 @@ public class MemoryManager
         }
     }
     
-    public void Start() => Task.Run(CheckUse);
+    public void Start() => Task.Run(CheckUse, _cancellationToken.Token);
+
+    public void Stop() => _cancellationToken.Cancel();
 }

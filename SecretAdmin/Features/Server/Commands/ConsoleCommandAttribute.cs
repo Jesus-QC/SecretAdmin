@@ -6,9 +6,11 @@ namespace SecretAdmin.Features.Server.Commands;
 public class ConsoleCommandAttribute : Attribute
 {
     public string Name { get; }
-
-    public ConsoleCommandAttribute(string name)
+    public string[] Aliases { get; }
+    
+    public ConsoleCommandAttribute(string name, string[] aliases = null)
     {
         Name = name;
+        Aliases = aliases ?? Array.Empty<string>();
     }
 }

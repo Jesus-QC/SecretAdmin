@@ -11,15 +11,9 @@ public static class ProgramIntroduction
     {
         Log.Alert("\nHi, welcome to SecretAdmin!");
         Log.Alert("We have to configure some things before starting!\n");
-        
-        Rule rule = new Rule("[red]Configuration[/]")
-        {
-            Alignment = Justify.Left
-        };
-        
-        AnsiConsole.Write(rule);
-        AnsiConsole.WriteLine();
-        
+
+        AnsiConsole.WriteLine("[red]Configuration[/]");
+
         // Program Options
         
         MainConfig cfg = new ()

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using SecretAdmin.API.Events;
+using SecretAdmin.API.Events.Arguments;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server.Enums;
@@ -20,7 +23,7 @@ public class ScpServer
     public SocketServer SocketServer;
 
     public MemoryManager MemoryManager;
-    //public SilentCrashHandler SilentCrashHandler;
+    public SilentCrashHandler SilentCrashHandler;
 
     private bool _logStdErr;
     private bool _logStdOut;
@@ -36,6 +39,11 @@ public class ScpServer
     
     public void Start()
     {
+        StartingServerEventArgs args = new (this);
+        Handler.OnStartingServer(args);
+        if (!args.IsAllowed)
+            return;
+        
         if (!Utils.TryGetExecutable(out string executablePath))
         {
             Environment.Exit(-1);
@@ -48,7 +56,7 @@ public class ScpServer
         _serverLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-server.log"));
         _outputLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-output.log"));
 
-        string[] gameArgs = 
+        List<string> gameArgs = new() 
         {
             "-batchmode",
             "-nographics", 
@@ -58,6 +66,11 @@ public class ScpServer
             $"-console{SocketServer.Port}", 
             $"-port{_port}",
         };
+
+        if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+        {
+            gameArgs.Add("-heartbeat");
+        }
 
         ProcessStartInfo startInfo = new(executablePath, string.Join(' ', gameArgs) + ' ' + string.Join(' ', _args ?? Array.Empty<string>()))
         {
@@ -90,25 +103,33 @@ public class ScpServer
 
         MemoryManager = new MemoryManager(_process);
         MemoryManager.Start();
-
-        // QuickEdit Mode in windows make false crash positives. 👀
-        // Until that, feature disabled.
-        // SilentCrashHandler = new SilentCrashHandler(SocketServer);
-        // SilentCrashHandler.Start();
+        
+        if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
+        {
+            SilentCrashHandler = new SilentCrashHandler();
+        }
     }
 
     public void Stop()
     {
+        StoppingServerEventArgs args = new (this);
+        Handler.OnStoppingServer(args);
+        if(!args.IsAllowed)
+            return;
+        
         Status = ServerStatus.Offline;
 
         if (MemoryManager is not null)
         {
-            MemoryManager.Killed = true;
+            MemoryManager.Stop();
             MemoryManager = null;
         }
-        
-        // SilentCrashHandler.Killed = true;
-        // SilentCrashHandler = null;
+
+        if (SilentCrashHandler is not null)
+        {
+            SilentCrashHandler.Stop();
+            SilentCrashHandler = null;
+        }
 
         if (SocketServer is not null)
         {
@@ -121,6 +142,12 @@ public class ScpServer
 
     public void Restart()
     {
+        RestartingServerEventArgs args = new (this);
+        Handler.OnRestartingServer(args);
+        
+        if (!args.IsAllowed)
+            return;
+            
         System.Console.Clear();
         Stop();
         Start();

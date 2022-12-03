@@ -7,8 +7,8 @@ namespace SecretAdmin.Features.Program.Config;
 public class ConfigManager
 {
     public MainConfig SecretAdminConfig = new ();
-    private readonly Serializer _serializer = new ();
-    private readonly Deserializer _deserializer = new ();
+    public static readonly Serializer Serializer = new ();
+    public static readonly Deserializer Deserializer = new ();
 
     public void LoadConfig()
     {
@@ -25,12 +25,12 @@ public class ConfigManager
             }
         }
         
-        SecretAdminConfig = _deserializer.Deserialize<MainConfig>(File.ReadAllText(Paths.ProgramConfig));
+        SecretAdminConfig = Deserializer.Deserialize<MainConfig>(File.ReadAllText(Paths.ProgramConfig));
     }
 
     public void SaveConfig(MainConfig config)
     {
-        File.WriteAllText(Paths.ProgramConfig, _serializer.Serialize(config));
+        File.WriteAllText(Paths.ProgramConfig, Serializer.Serialize(config));
         LoadConfig();
     }
 }

@@ -1,4 +1,6 @@
-﻿using SecretAdmin.Features.Console;
+﻿using SecretAdmin.API.Events;
+using SecretAdmin.API.Events.Arguments;
+using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Server.Enums;
 
 namespace SecretAdmin.Features.Program;
@@ -16,7 +18,15 @@ public static class InputManager
             
             input = input.TrimStart();
 
-            if(!SecretAdmin.Program.CommandHandler.SendCommand(input))
+            ReceivingInputEventArgs args = new (input);
+            Handler.OnReceivingInput(args);
+            
+            if (!args.IsAllowed)
+                continue;
+
+            input = args.Input;
+                
+            if (!SecretAdmin.Program.CommandHandler.SendCommand(input))
                 ManageInput(input);
         }
     }

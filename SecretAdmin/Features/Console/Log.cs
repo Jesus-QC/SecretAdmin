@@ -175,7 +175,7 @@ public static class Log
         }
     }
         
-    public static void HandleMessage(string message, byte code)
+    public static void HandleMessage(string message, ConsoleColor code)
     {
         if (string.IsNullOrWhiteSpace(message))
             return;
@@ -207,17 +207,17 @@ public static class Log
         {
             switch (code)
             {
-                case 10:
+                case ConsoleColor.Green:
                     SpectreRaw(message.EscapeMarkup(), "springgreen3", true);
                     break;
-                case 15:
+                case ConsoleColor.White:
                     SpectreRaw(message.EscapeMarkup(), "mediumpurple4", true);
                     break;
-                case 6:
+                case ConsoleColor.DarkYellow:
                     SpectreRaw(message.EscapeMarkup(), "dodgerblue1", true);
                     break;
                 default:
-                    Raw(message, (ConsoleColor)code);
+                    Raw(message, code);
                     break;
             }
         }

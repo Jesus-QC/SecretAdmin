@@ -1,13 +1,11 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using SecretAdmin.API;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server;
 using SecretAdmin.Features.Server.Commands;
-using SecretAdmin.Features.Server.Enums;
 using Spectre.Console;
 using ConfigManager = SecretAdmin.Features.Program.Config.ConfigManager;
 
@@ -39,7 +37,7 @@ class Program
     private static void Start(string[] args)
     {
         if (Console.WindowWidth is 0) // Pterodactyl
-            AnsiConsole.Console.Profile.Width = 100;
+            AnsiConsole.Console.Profile.Width = 1000;
 
         if (args.Length == 0 || !int.TryParse(args[0], out int port))
             port = Log.GetOption("Please introduce the port you want to start the server on", 7777);
@@ -53,9 +51,11 @@ class Program
         ConfigManager = new ConfigManager();
         ConfigManager.LoadConfig();
 
-        // if (ConfigManager.SecretAdminConfig.AutoUpdater)
-        //     AutoUpdater.CheckForUpdates();
+        if (ConfigManager.SecretAdminConfig.AutoUpdater)
+            AutoUpdater.CheckForUpdates().Wait();
 
+        ModuleLoader.Load();
+        
         Utils.RemoveOldLogs(ConfigManager.SecretAdminConfig.DeleteLogsDays);
         Utils.ArchiveOldLogs(ConfigManager.SecretAdminConfig.ArchiveLogsDays);
         

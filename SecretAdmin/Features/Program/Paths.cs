@@ -10,6 +10,9 @@ public static class Paths
     public static string ServerLogsFolder;
     public static string ProgramLogsFolder;
     public static string ProgramConfig;
+    public static string ModulesFolder;
+    public static string DependenciesFolder;
+    public static string ModulesConfigFolder;
 
     public static void Load(int port)
     {
@@ -18,6 +21,9 @@ public static class Paths
         ServerLogsFolder = Path.Combine(LogsFolder, "Server");
         ProgramLogsFolder = Path.Combine(LogsFolder, "SecretAdmin");
         ProgramConfig = Path.Combine(MainFolder, "config.yml");
+        ModulesFolder = Path.Combine(MainFolder, "Modules");
+        DependenciesFolder = Path.Combine(MainFolder, "Dependencies");
+        ModulesConfigFolder = Path.Combine(MainFolder, "Configs");
         
         CreateIfNotExists();
     }
@@ -28,5 +34,8 @@ public static class Paths
         Directory.CreateDirectory(LogsFolder);
         Directory.CreateDirectory(ServerLogsFolder);
         Directory.CreateDirectory(ProgramLogsFolder);
+        Directory.CreateDirectory(ModulesFolder);
+        Directory.CreateDirectory(DependenciesFolder);
+        Directory.CreateDirectory(ModulesConfigFolder);
     }
 }
