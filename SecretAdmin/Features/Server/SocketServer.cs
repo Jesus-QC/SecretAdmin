@@ -49,7 +49,7 @@ public class SocketServer
     private async void ListenRequests()
     {
         byte[] codeBuffer = new byte[1];
-        byte[] lenghtBuffer = new byte[sizeof(int)];
+        byte[] lenghtBuffer = new byte[sizeof(int)]; // use size of an int since the lenght is sent as an int
             
         try
         {
@@ -77,9 +77,10 @@ public class SocketServer
                 byte[] messageBuffer = new byte[length];
                 int messageBytesRead = await _stream.ReadAsync(messageBuffer.AsMemory(0, length), _cancellationTokenSource.Token);
 
+                // Null message is 99% a disconnection.
                 if (codeBytes <= 0 || lengthBytes != sizeof(int) || messageBytesRead <= 0)
                 {
-                    if (SecretAdmin.Program.Server.Status == ServerStatus.Online)
+                    if (SecretAdmin.Program.Server.Status != ServerStatus.Offline)
                         Log.Alert("Socket disconnected.");
                     
                     break;
@@ -181,7 +182,7 @@ public class SocketServer
                 break;
             
             default:
-                Log.Alert($"Received unknown output code ({(OutputCodes)action}), possible buffer spam.");
+                Log.Alert($"Received unknown output code ({action}), possible buffer spam.");
                 break;
         }
     }

@@ -19,10 +19,13 @@ public class SilentCrashHandler
         {
             if (SecretAdmin.Program.Server.Status is ServerStatus.Offline)
                 return;
-            
+
             if (SecretAdmin.Program.Server.Status is ServerStatus.Idle)
+            {
+                await Task.Delay(5000);
                 continue;
-                
+            }
+
             if (secondsWithoutContact >= 16)
             {
                 Log.Alert("Not Receiving Heartbeats... Waiting 5 last seconds.");
