@@ -11,7 +11,7 @@ using ConfigManager = SecretAdmin.Features.Program.Config.ConfigManager;
 
 namespace SecretAdmin;
 
-class Program
+public static class Program
 {
     public static Version Version { get; private set; }
     public static ScpServer Server { get; private set; }
@@ -28,7 +28,7 @@ class Program
         
         AppDomain.CurrentDomain.ProcessExit += OnExit;
         AppDomain.CurrentDomain.UnhandledException += OnError;
-        
+
         AnsiConsole.Record();
 
         Start(args);
@@ -51,10 +51,8 @@ class Program
         ConfigManager = new ConfigManager();
         ConfigManager.LoadConfig();
 
-        if (ConfigManager.SecretAdminConfig.AutoUpdater)
-            AutoUpdater.CheckForUpdates().Wait();
-
-        ModuleLoader.Load();
+        if(ConfigManager.SecretAdminConfig.EnableModules)
+            ModuleLoader.Load();
         
         Utils.RemoveOldLogs(ConfigManager.SecretAdminConfig.DeleteLogsDays);
         Utils.ArchiveOldLogs(ConfigManager.SecretAdminConfig.ArchiveLogsDays);
@@ -87,7 +85,6 @@ class Program
         
     private static void OnExit(object obj, EventArgs ev)
     {
-        Console.Clear();
         AnsiConsole.MarkupLine("[yellow]Exiting safely.[/]");
         
         if ((ConfigManager?.SecretAdminConfig?.SafeShutdown ?? false) && Server is not null)

@@ -41,20 +41,35 @@ public class ScpServer
     {
         StartingServerEventArgs args = new (this);
         Handler.OnStartingServer(args);
+        
         if (!args.IsAllowed)
             return;
+
+        SocketServer = new SocketServer();
+        
+        StartServerProcess();
+    }
+
+    private void StartServerProcess()
+    {
+        _process?.Dispose();
         
         if (!Utils.TryGetExecutable(out string executablePath))
         {
             Environment.Exit(-1);
             return;
         }
+     
+        Log.Alert($"Starting server on port: {_port}.\n");
+        System.Console.Title = $"SecretAdmin [v{SecretAdmin.Program.Version}] - {_port}";
 
-        _process?.Dispose();
-        SocketServer = new SocketServer();
+        DateTime now = Log.GetDateTimeWithOffset();
+        string day = now.ToString("yyyy-MM-dd");
+        
+        Directory.CreateDirectory(Path.Combine(Paths.ServerLogsFolder, day));
 
-        _serverLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-server.log"));
-        _outputLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, $"{DateTime.Now:MM.dd.yyyy-hh.mm.ss}-output.log"));
+        _serverLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, day, $"{now:hh-mm-ss}-server.log"));
+        _outputLogger = new Logger(Path.Combine(Paths.ServerLogsFolder, day, $"{now:hh-mm-ss}-output.log"));
 
         List<string> gameArgs = new() 
         {
@@ -80,8 +95,6 @@ public class ScpServer
             RedirectStandardError = true
         };
         
-        Log.Alert($"Starting server on port: {_port}.\n");
-        
         _process = Process.Start(startInfo);
 
         if (_process is null)
@@ -90,7 +103,7 @@ public class ScpServer
             Log.ReadKey();
             Environment.Exit(-1);
         }
-
+        
         _process.EnableRaisingEvents = true;
         
         _process.Exited += OnExited;
@@ -98,7 +111,7 @@ public class ScpServer
         _process.ErrorDataReceived += StdErr;
         _process.BeginOutputReadLine();
         _process.BeginErrorReadLine();
-
+        
         Status = ServerStatus.Online;
 
         MemoryManager = new MemoryManager(_process);
@@ -109,33 +122,47 @@ public class ScpServer
             SilentCrashHandler = new SilentCrashHandler();
         }
     }
+    
+    private void KillMemoryManager()
+    {
+        if (MemoryManager is null) 
+            return;
+        
+        MemoryManager.Stop();
+        MemoryManager = null;
+    }
 
+    private void KillSilentCrashHandler()
+    {
+        if (SilentCrashHandler is null) 
+            return;
+        
+        SilentCrashHandler.Stop();
+        SilentCrashHandler = null;
+    }
+
+    private void KillSocket()
+    {
+        if (SocketServer is null)
+            return;
+        
+        SocketServer.Stop();
+        SocketServer = null;
+    }
+    
     public void Stop()
     {
         StoppingServerEventArgs args = new (this);
         Handler.OnStoppingServer(args);
+        
         if(!args.IsAllowed)
             return;
         
         Status = ServerStatus.Offline;
 
-        if (MemoryManager is not null)
-        {
-            MemoryManager.Stop();
-            MemoryManager = null;
-        }
-
-        if (SilentCrashHandler is not null)
-        {
-            SilentCrashHandler.Stop();
-            SilentCrashHandler = null;
-        }
-
-        if (SocketServer is not null)
-        {
-            SocketServer.Stop();
-            SocketServer = null;
-        }
+        KillMemoryManager();
+        KillSilentCrashHandler();
+        KillSocket();
         
         _process.Kill();
     }
@@ -149,8 +176,16 @@ public class ScpServer
             return;
             
         System.Console.Clear();
-        Stop();
-        Start();
+
+        Status = ServerStatus.Offline;
+        
+        KillMemoryManager();
+        KillSilentCrashHandler();
+        SocketServer.Reset();
+        
+        _process.Kill();
+        
+        StartServerProcess();
     }
 
     private void OnExited(object o, EventArgs e)
@@ -172,16 +207,15 @@ public class ScpServer
             case ServerStatus.Idle:
             case ServerStatus.Online:
             {
-                Log.Raw(@"
-   █████████                              █████      ███
-  ███░░░░░███                            ░░███      ░███
- ███     ░░░  ████████   ██████    █████  ░███████  ░███
-░███         ░░███░░███ ░░░░░███  ███░░   ░███░░███ ░███
-░███          ░███ ░░░   ███████ ░░█████  ░███ ░███ ░███
-░░███     ███ ░███      ███░░███  ░░░░███ ░███ ░███ ░░░ 
- ░░█████████  █████    ░░████████ ██████  ████ █████ ███
-  ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ",
-                    ConsoleColor.DarkYellow, false);
+                Log.Raw(@"" + 
+                        @"   █████████                              █████      ███"+
+                        "  ███░░░░░███                            ░░███      ░███" +
+                        " ███     ░░░  ████████   ██████    █████  ░███████  ░███" +
+                        "░███         ░░███░░███ ░░░░░███  ███░░   ░███░░███ ░███" +
+                        "░███          ░███ ░░░   ███████ ░░█████  ░███ ░███ ░███" +
+                        "░░███     ███ ░███      ███░░███  ░░░░███ ░███ ░███ ░░░ " +
+                        " ░░█████████  █████    ░░████████ ██████  ████ █████ ███" +
+                        "  ░░░░░░░░░  ░░░░░      ░░░░░░░░ ░░░░░░  ░░░░ ░░░░░ ░░░ ", ConsoleColor.DarkYellow, false);
                 
                 if (SecretAdmin.Program.ConfigManager.SecretAdminConfig.RestartOnCrash)
                     Restart();

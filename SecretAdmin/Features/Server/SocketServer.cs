@@ -15,20 +15,26 @@ namespace SecretAdmin.Features.Server;
 
 public class SocketServer
 {
-    public readonly int Port;
+    public int Port;
 
-    private readonly TcpListener _listener;
+    private TcpListener _listener;
     private TcpClient _client;
     private NetworkStream _stream;
     
-    private readonly CancellationTokenSource _cancellationTokenSource = new ();
+    private CancellationTokenSource _cancellationTokenSource = new ();
     
     public SocketServer()
+    {
+        Start();
+    }
+
+    private void Start()
     {
         _listener = new TcpListener(new IPEndPoint(IPAddress.Loopback, 0));
         _listener.Start();
 
         Port = ((IPEndPoint)_listener.LocalEndpoint).Port;
+        _cancellationTokenSource = new CancellationTokenSource();
 
         _listener.BeginAcceptTcpClient(asyncResult =>
         {
@@ -37,6 +43,12 @@ public class SocketServer
 
             Task.Run(ListenRequests);
         }, _listener);
+    }
+
+    public void Reset()
+    {
+        Stop();
+        Start();
     }
 
     public void Stop()
@@ -48,8 +60,8 @@ public class SocketServer
 
     private async void ListenRequests()
     {
-        byte[] codeBuffer = new byte[1];
-        byte[] lenghtBuffer = new byte[sizeof(int)]; // use size of an int since the lenght is sent as an int
+        byte[] codeBuffer = new byte[1]; // use size of byte since the code is a single byte
+        byte[] lenghtBuffer = new byte[sizeof(int)]; // use size of an int since the lenght is sent as an int (4 bytes)
             
         try
         {
@@ -96,7 +108,7 @@ public class SocketServer
 
                 message = args.Message;
                     
-                SecretAdmin.Program.Server.AddLog(message, $"[{DateTime.Now:T}]");
+                SecretAdmin.Program.Server.AddLog(message, Log.GetTimeWithOffset());
                 Log.HandleMessage(message, args.Color);
             }
         }

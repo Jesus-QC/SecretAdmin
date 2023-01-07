@@ -34,23 +34,10 @@ public class CommandHandler
     [ConsoleCommand("Exit", new[] { "Quit" })]
     private static void ExitCommand()
     {
-        try
-        {
-            SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
-            SecretAdmin.Program.Server.SocketServer.SendMessage("exit");
-            System.Console.Clear();
-            
-            Log.SpectreRaw("Stopping the server safely.", "lightslateblue");
-            Log.WriteLine(@".   ___     _ _   _             .", ConsoleColor.Red);
-            Log.WriteLine(@"|  | __|_ _(_) |_(_)_ _  __ _   |", ConsoleColor.DarkCyan);
-            Log.WriteLine(@"|  | _|\ \ / |  _| | ' \/ _` |  |", ConsoleColor.Yellow);
-            Log.WriteLine(@"|  |___/_\_\_|\__|_|_||_\__, |  |", ConsoleColor.DarkMagenta);
-            Log.WriteLine(@".                       |___/   .", ConsoleColor.Red);
-        }
-        catch
-        {
-            Environment.Exit(-1);
-        }
+        SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
+        SecretAdmin.Program.Server.SocketServer.SendMessage("exit");
+        System.Console.Clear();
+        Environment.Exit(0);
     }
         
     [ConsoleCommand("SR", new [] { "serverrestart" })]
