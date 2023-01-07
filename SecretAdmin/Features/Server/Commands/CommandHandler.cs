@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server.Enums;
 
 namespace SecretAdmin.Features.Server.Commands;
@@ -10,6 +11,13 @@ namespace SecretAdmin.Features.Server.Commands;
 public class CommandHandler
 {
     public readonly Dictionary<string, MethodInfo> Commands = new();
+    
+    [ConsoleCommand("secretadmin-reconfigure")]
+    private static void ReconfigureSecretAdmin()
+    {
+        ProgramIntroduction.ShowIntroduction();
+        System.Console.WriteLine("Restart to apply the changes!");
+    }
     
     [ConsoleCommand("Ram")]
     private static void ShowRamUsage()
