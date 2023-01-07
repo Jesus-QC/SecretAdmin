@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using SecretAdmin.Features.Console;
 using SecretAdmin.Features.Program.Config;
 using Spectre.Console;
@@ -18,13 +19,14 @@ public static class ProgramIntroduction
         
         MainConfig cfg = new ()
         {
-            AutoUpdater = Log.GetConfirm("Do you want to enable the auto updater?", true),
             SafeShutdown = Log.GetConfirm("Do you want to safe shutdown the game processes?", true),
             ArchiveLogsDays = Log.GetOption("In how many days the logs should be archived?", 1),
             DeleteLogsDays = Log.GetOption("In how many days the logs should be deleted?", 2),
             RestartOnCrash = Log.GetConfirm("Should the server automatically restart itself when it crashes?", true),
             RestartWithLowMemory = Log.GetConfirm("Should the server restart itself when it has low memory?", true),
-            MaxDefaultMemory = Log.GetOption("Max memory the server can use, in MB.", 2048)
+            MaxDefaultMemory = Log.GetOption("Max memory the server can use, in MB.", 2048),
+            EnableModules = Log.GetConfirm("Do you want to use Modules? Found in our discord.", false),
+            TimeOffset = Log.GetOption($"{DateTime.Now:T} In hours, write how many hours should be added/removed (For example -2).", 0),
         };
         
         SecretAdmin.Program.ConfigManager.SaveConfig(cfg);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SecretAdmin.Features.Console;
+using SecretAdmin.Features.Program;
 using SecretAdmin.Features.Server.Enums;
 
 namespace SecretAdmin.Features.Server.Commands;
@@ -10,6 +11,13 @@ namespace SecretAdmin.Features.Server.Commands;
 public class CommandHandler
 {
     public readonly Dictionary<string, MethodInfo> Commands = new();
+    
+    [ConsoleCommand("secretadmin-reconfigure")]
+    private static void ReconfigureSecretAdmin()
+    {
+        ProgramIntroduction.ShowIntroduction();
+        System.Console.WriteLine("Restart to apply the changes!");
+    }
     
     [ConsoleCommand("Ram")]
     private static void ShowRamUsage()
@@ -34,23 +42,10 @@ public class CommandHandler
     [ConsoleCommand("Exit", new[] { "Quit" })]
     private static void ExitCommand()
     {
-        try
-        {
-            SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
-            SecretAdmin.Program.Server.SocketServer.SendMessage("exit");
-            System.Console.Clear();
-            
-            Log.SpectreRaw("Stopping the server safely.", "lightslateblue");
-            Log.WriteLine(@".   ___     _ _   _             .", ConsoleColor.Red);
-            Log.WriteLine(@"|  | __|_ _(_) |_(_)_ _  __ _   |", ConsoleColor.DarkCyan);
-            Log.WriteLine(@"|  | _|\ \ / |  _| | ' \/ _` |  |", ConsoleColor.Yellow);
-            Log.WriteLine(@"|  |___/_\_\_|\__|_|_||_\__, |  |", ConsoleColor.DarkMagenta);
-            Log.WriteLine(@".                       |___/   .", ConsoleColor.Red);
-        }
-        catch
-        {
-            Environment.Exit(-1);
-        }
+        SecretAdmin.Program.Server.Status = ServerStatus.ExitingNextRound;
+        SecretAdmin.Program.Server.SocketServer.SendMessage("exit");
+        System.Console.Clear();
+        Environment.Exit(0);
     }
         
     [ConsoleCommand("SR", new [] { "serverrestart" })]

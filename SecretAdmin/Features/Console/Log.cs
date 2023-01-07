@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using Spectre.Console;
 using SConsole = System.Console;
 
@@ -7,10 +6,7 @@ namespace SecretAdmin.Features.Console;
 
 public static class Log 
 {
-    private static readonly Regex FrameworksRegex = new (@"\[(DEBUG|INFO|WARN|ERROR)\] (\[.*?\]) (.*)", RegexOptions.Compiled | RegexOptions.Singleline);
-
     // Program Alerts
-        
     public static void Intro()
     {
         SConsole.Clear();
@@ -24,7 +20,10 @@ public static class Log
         WriteLine(" [lightgoldenrod1]by Jesus-QC[/]");
         WriteLine($"[thistle1]Released under MIT License Copyright © Jesus-QC 2021-{DateTime.Now.Year}[/]");
     }
-        
+
+    public static DateTime GetDateTimeWithOffset() => DateTime.Now.AddHours(SecretAdmin.Program.ConfigManager.SecretAdminConfig.TimeOffset);
+    public static string GetTimeWithOffset() => GetDateTimeWithOffset().ToString("T");
+    
     public static void Input(string message, string title = "SERVER")
     {
         Write($"[mistyrose1]{title} >>> [/]");
@@ -80,39 +79,7 @@ public static class Log
         WriteLine($"[{color}]{message}[/]");
     }
 
-    private static void Info(string title, string message)
-    {
-        AddTimeStamp();
-        Write("[mediumpurple1][[[lightskyblue1]INFO[/]]][/] ");
-        Write($"[khaki1][{title}][/] ");
-        WriteLine(message.EscapeMarkup());
-    }
-
-    private static void Error(string title, string message)
-    {
-        AddTimeStamp();
-        Write("[maroon][[[deeppink2]ERROR[/]]][/] ");
-        Write($"[gold1][{title}][/] ");
-        WriteLine($"[deeppink2]{message.EscapeMarkup()}[/]");
-    }
-
-    private static void Debug(string title, string message)
-    {
-        AddTimeStamp();
-        Write("[lightcyan1][[[cornflowerblue]DEBUG[/]]][/] ");
-        Write($"[grey58][{title}][/] ");
-        WriteLine($"[cornflowerblue]{message.EscapeMarkup()}[/]");
-    }
-
-    private static void Warn(string title, string message)
-    {
-        AddTimeStamp();
-        Write("[wheat1][[[gold1]WARN[/]]][/] ");
-        Write($"[mediumpurple1][{title}][/] ");
-        WriteLine($"[gold1]{message.EscapeMarkup()}[/]");
-    }
-
-    private static void AddTimeStamp() => AnsiConsole.Markup($"[paleturquoise4][[[deepskyblue4_1]{DateTime.Now:T}[/]]][/] ");
+    private static void AddTimeStamp() => AnsiConsole.Markup($"[paleturquoise4][[[deepskyblue4_1]{GetTimeWithOffset()}[/]]][/] ");
 
     public static void WriteLine(string message, ConsoleColor color = ConsoleColor.White)
     {
@@ -180,46 +147,33 @@ public static class Log
         if (string.IsNullOrWhiteSpace(message))
             return;
             
-        Match match = FrameworksRegex.Match(message);
-
-        if (match.Success)
+        switch (code)
         {
-            if (match.Groups.Count > 3)
-            {
-                switch (match.Groups[1].Value.Trim())
-                {
-                    case "INFO":
-                        Info(match.Groups[2].Value, match.Groups[3].Value);
-                        break;
-                    case "WARN":
-                        Warn(match.Groups[2].Value, match.Groups[3].Value);
-                        break;
-                    case "DEBUG":
-                        Debug(match.Groups[2].Value, match.Groups[3].Value);
-                        break;
-                    case "ERROR":
-                        Error(match.Groups[2].Value, match.Groups[3].Value);
-                        break;
-                }
-            }
-        }
-        else
-        {
-            switch (code)
-            {
-                case ConsoleColor.Green:
-                    SpectreRaw(message.EscapeMarkup(), "springgreen3", true);
-                    break;
-                case ConsoleColor.White:
-                    SpectreRaw(message.EscapeMarkup(), "mediumpurple4", true);
-                    break;
-                case ConsoleColor.DarkYellow:
-                    SpectreRaw(message.EscapeMarkup(), "dodgerblue1", true);
-                    break;
-                default:
-                    Raw(message, code);
-                    break;
-            }
+            case ConsoleColor.Green:
+                SpectreRaw(message.EscapeMarkup(), "springgreen3", true);
+                break;
+            case ConsoleColor.White:
+                SpectreRaw(message.EscapeMarkup(), "mediumpurple4", true);
+                break;
+            case ConsoleColor.DarkYellow:
+                SpectreRaw(message.EscapeMarkup(), "dodgerblue1", true);
+                break;
+            case ConsoleColor.Black:
+            case ConsoleColor.DarkBlue:
+            case ConsoleColor.DarkGreen:
+            case ConsoleColor.DarkCyan:
+            case ConsoleColor.DarkRed:
+            case ConsoleColor.DarkMagenta:
+            case ConsoleColor.Gray:
+            case ConsoleColor.DarkGray:
+            case ConsoleColor.Blue:
+            case ConsoleColor.Cyan:
+            case ConsoleColor.Red:
+            case ConsoleColor.Magenta:
+            case ConsoleColor.Yellow:
+            default:
+                Raw(message, code);
+                break;
         }
     }
 }
